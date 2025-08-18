@@ -1,0 +1,100 @@
+/* Reset básico */
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Container centralizado com imagem de fundo */
+.centerContainer {
+  display: flex;
+  justify-content: center;  
+  align-items: center;      
+  height: 100vh;            
+  background-image: url("../public/imgs/Auth.png"); /* caminho relativo */
+  background-size: cover;      
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Formulário */
+.formContainer {
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.95);
+  width: 100%;
+  max-width: 350px;     /* limite em telas grandes */
+  min-width: 260px;     /* não deixa ficar muito pequeno */
+  box-sizing: border-box;
+  margin: 20px auto;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); /* sombra leve */
+  transition: transform 0.2s ease-in-out;
+}
+
+
+/* Inputs */
+.formContainer .form-control {
+  width: 100%;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.formContainer .form-control:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Botão */
+.formContainer button {
+  width: 100%;
+  font-size: 15px;
+  padding: 10px;
+  margin-top: 15px;
+  background-color: #000;   /* cor do botão */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.formContainer button:hover {
+  background-color: #333;   /* quando coloca o mouse em cima muda a cor */
+}
+
+/* Espaçamento entre campos */
+.formContainer .form-group {
+  margin-bottom: 12px;
+}
+
+/* Media query para telas muito grandes (desktop widescreen) */
+@media (min-width: 1200px) {
+  .formContainer {
+    max-width: 300px; 
+  }
+}
+
+/* Media query para celulares pequenos */
+@media (max-width: 400px) {
+  .formContainer {
+    width: 90%;        
+    max-width: 90%;
+  }
+}
+
+.form-logo {
+  display: block;
+  max-width: 120px;        /* tamanho da logo */
+  margin: 0 auto 20px auto; /* centraliza e dá espaço abaixo */
+}
+
+.logo-title {
+  display: block;
+  align-items: center;
+  margin: 0 auto 20px auto; /* centraliza e dá espaço abaixo */
+}

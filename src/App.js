@@ -1,14 +1,11 @@
-import logo from './logo.svg';
-import './App.css';
-import { Form } from 'react-bootstrap';
+// src/App.jsx
 import MeuForm from './MeuForm';
-
+import './index.css'; // Mantenha apenas o seu arquivo de entrada do Tailwind
 
 function App() {
   return (
-    <div className="centerContainer">
-      
-      <MeuForm className="formContainer"/>
+    <div className="App">
+      <MeuForm />
     </div>
   );
 }

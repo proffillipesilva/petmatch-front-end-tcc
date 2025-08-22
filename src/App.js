@@ -1,11 +1,26 @@
-// src/App.jsx
+import React, { useState } from 'react';
+import LoginScreen from './LoginScreen';
 import MeuForm from './MeuForm';
-import './index.css'; // Mantenha apenas o seu arquivo de entrada do Tailwind
+import './index.css';
 
 function App() {
+  const [currentScreen, setCurrentScreen] = useState('login'); // 'login' ou 'register'
+
+  const handleSwitchToLogin = () => {
+    setCurrentScreen('login');
+  };
+
+  const handleSwitchToRegister = () => {
+    setCurrentScreen('register');
+  };
+
   return (
     <div className="App">
-      <MeuForm />
+      {currentScreen === 'login' ? (
+        <LoginScreen onSwitchToRegister={handleSwitchToRegister} />
+      ) : (
+        <MeuForm onSwitchToLogin={handleSwitchToLogin} />
+      )}
     </div>
   );
 }

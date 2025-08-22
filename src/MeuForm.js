@@ -2,7 +2,7 @@ import React from 'react'
 import api from './api'
 import { cnpj } from 'cpf-cnpj-validator';
 
-const MeuForm = () => {
+const MeuForm = ({ onSwitchToLogin }) => {
 
     const [form, setForm] = React.useState({nomeOng: "", emailOng: "", telefone: "", cnpj: "", endereco:""})
 
@@ -50,7 +50,7 @@ const MeuForm = () => {
                         value={form.nomeOng} 
                         onChange={handleForm} 
                         placeholder="Digite o nome"
-                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/30 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
                     />
                 </div>
                 <div className="mb-3.5">
@@ -62,7 +62,7 @@ const MeuForm = () => {
                         value={form.emailOng} 
                         onChange={handleForm} 
                         placeholder="Digite o e-mail"
-                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/30 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
                     />
                 </div>
                 <div className="mb-3.5">
@@ -74,7 +74,7 @@ const MeuForm = () => {
                         value={form.telefone} 
                         onChange={handleForm} 
                         placeholder="Digite o telefone"
-                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/30 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
                     />
                 </div>
                 <div className="mb-3.5">
@@ -86,7 +86,7 @@ const MeuForm = () => {
                         value={form.cnpj} 
                         onChange={handleForm} 
                         placeholder="Digite o CNPJ"
-                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/30 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
                     />
                 </div>
                 <div className="mb-3.5">
@@ -98,22 +98,37 @@ const MeuForm = () => {
                         value={form.endereco} 
                         onChange={handleForm} 
                         placeholder="Digite o endereço"
-                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/30 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                        className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
                     />
                 </div>
                 
                 <button 
                     type="submit" 
-                    className="w-full text-base py-3 mt-4 bg-black text-white font-semibold rounded-md cursor-pointer transition-colors hover:bg-gray-800"
+                    className="w-full text-base rounded-2xl py-2.5 mt-4 bg-black text-white font-semibold rounded-md cursor-pointer transition-colors hover:bg-gray-800"
                 >
                     Cadastrar
                 </button>
 
-                <p className="mt-3 text-[11px] text-[#222] text-center text-shadow-default">
+                <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
                     Ao clicar em continuar, você concorda com os nossos 
-                    <a href="https://youtu.be/LHqRwGTP2qQ?si=ORCAvf9YCwXQYFSk" target="_blank" rel="noopener noreferrer" className="text-[#007bff] no-underline hover:underline"> Termos de Serviço</a> e 
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-[#007bff] no-underline hover:underline"> Política de Privacidade</a>.
+                    <a href="https://youtu.be/LHqRwGTP2qQ?si=ORCAvf9YCwXQYFSk" target="_blank" rel="noopener noreferrer" className="text-black underline hover:underline"> Termos de Serviço</a> e 
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="text-black underline hover:underline"> Política de Privacidade</a>.
                 </p>
+                
+                <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
+                    Já tem uma conta?{' '}
+                <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      onSwitchToLogin();
+    }}
+    className="underline text-black hover:text-gray-700"
+  >
+    Faça login
+  </a>
+</p>
+
             </form>
         </div>
     </div>

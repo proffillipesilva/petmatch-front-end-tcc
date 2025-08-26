@@ -1,9 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import api from './api'
 import { cnpj } from 'cpf-cnpj-validator';
 
 const MeuForm = ({ onSwitchToLogin }) => {
-
     const [form, setForm] = React.useState({
         nomeOng: "",
         emailOng: "",
@@ -12,28 +11,62 @@ const MeuForm = ({ onSwitchToLogin }) => {
         endereco: ""
     });
 
-    const [emailError, setEmailError] = React.useState("");
-    const [cnpjError, setCnpjError] = React.useState(""); // Estado para erro do CNPJ
+    const [emailError, setEmailError] = useState("");
+    const [cnpjError, setCnpjError] = useState("");
+    const [nomeError, setNomeError] = useState("");
+    const [telefoneError, setTelefoneError] = useState("");
+    const [enderecoError, setEnderecoError] = useState("");
+    const [submissionMessage, setSubmissionMessage] = useState("");
 
     const enviaServidor = async (e) => {
         e.preventDefault();
+        let hasError = false;
 
-        // Validação para e-mail terminar com .com
+        // Nome
+        if (!form.nomeOng) {
+            setNomeError("O nome é obrigatório!");
+            hasError = true;
+        } else {
+            setNomeError("");
+        }
+
+        // Email
         const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
-        if (!emailRegex.test(form.emailOng)) {
+        if (!form.emailOng || !emailRegex.test(form.emailOng)) {
             setEmailError("Digite um e-mail válido que termine com '.com'");
-            return;
+            hasError = true;
         } else {
-            setEmailError(""); // limpa erro
+            setEmailError("");
         }
 
-        // Validação do CNPJ
-        if (!cnpj.isValid(form.cnpj)) {
-            setCnpjError("CNPJ inválido!");
-            return;
+        // Telefone
+        if (!form.telefone) {
+            setTelefoneError("O telefone é obrigatório!");
+            hasError = true;
         } else {
-            setCnpjError(""); // limpa erro
+            setTelefoneError("");
         }
+
+        // Endereço
+        if (!form.endereco) {
+            setEnderecoError("O endereço é obrigatório!");
+            hasError = true;
+        } else {
+            setEnderecoError("");
+        }
+
+        // CNPJ
+        if (!form.cnpj) {
+            setCnpjError("O CNPJ é obrigatório!");
+            hasError = true;
+        } else if (!cnpj.isValid(form.cnpj)) {
+            setCnpjError("CNPJ inválido!");
+            hasError = true;
+        } else {
+            setCnpjError("");
+        }
+
+        if (hasError) return; // se houver erro, não envia
 
         try {
             const resposta = await api.post("/users", form);
@@ -45,119 +78,125 @@ const MeuForm = ({ onSwitchToLogin }) => {
 
     const handleForm = (e) => {
         const { name, value } = e.target;
-
         setForm({ ...form, [name]: value });
 
-        // Limpar erro de e-mail enquanto digita
-        if (name === "emailOng" && emailError) {
-            setEmailError("");
-        }
-
-        // Limpar erro de CNPJ enquanto digita
-        if (name === "cnpj" && cnpjError) {
-            setCnpjError("");
-        }
+        // Limpa erro do campo que está sendo editado
+        if (name === "emailOng" && emailError) setEmailError("");
+        if (name === "cnpj" && cnpjError) setCnpjError("");
+        if (name === "nomeOng" && nomeError) setNomeError("");
+        if (name === "telefone" && telefoneError) setTelefoneError("");
+        if (name === "endereco" && enderecoError) setEnderecoError("");
     };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 bg-auth-pattern bg-cover bg-center bg-no-repeat text-[#333]">
             <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
 
-        <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
-        <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
-                    <img 
-                        src="/imgs/Frame1.png" 
-                        alt="logo" 
-                        className="max-w-[200px] mt-2.5" 
+                <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
+                    <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
+                    <img
+                        src="/imgs/Frame1.png"
+                        alt="logo"
+                        className="max-w-[200px] mt-2.5"
                     />
-        <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Crie uma conta</h2>
-        <h2 className="flex flex-col items-center logo-title text-sm font-bold">Digite o seu e-mail para cadastrar no aplicativo</h2>
-
+                    <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Crie uma conta</h2>
+                    <h2 className="flex flex-col items-center logo-title text-sm font-bold">Digite o seu e-mail para cadastrar no aplicativo</h2>
                 </div>
 
                 <form onSubmit={enviaServidor} className="w-full">
+                    
+                    {/* Nome */}
                     <div className="mb-3.5">
                         <label htmlFor="nomeOng" className="block text-black font-medium text-sm text-shadow">Nome:</label>
-                        <input 
-                            id="nomeOng" 
-                            name="nomeOng" 
-                            type="text" 
-                            value={form.nomeOng} 
-                            onChange={handleForm} 
+                        <input
+                            id="nomeOng"
+                            name="nomeOng"
+                            type="text"
+                            value={form.nomeOng}
+                            onChange={handleForm}
                             placeholder="Digite o nome"
-                            className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                            className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
+                                nomeError ? 'border-red-500' : 'border-white/80'
+                            } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
                         />
+                        {nomeError && <p className="text-red-600 text-xs mt-1">{nomeError}</p>}
                     </div>
 
+                    {/* Email */}
                     <div className="mb-3.5">
                         <label htmlFor="emailOng" className="block text-black font-medium text-sm text-shadow">E-mail:</label>
-                        <input 
-                            id="emailOng" 
-                            name="emailOng" 
-                            type="email" 
-                            value={form.emailOng} 
-                            onChange={handleForm} 
+                        <input
+                            id="emailOng"
+                            name="emailOng"
+                            type="email"
+                            value={form.emailOng}
+                            onChange={handleForm}
                             placeholder="Digite o e-mail"
                             className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
                                 emailError ? 'border-red-500' : 'border-white/80'
                             } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
                         />
-                        {emailError && (
-                            <p className="text-red-600 text-xs mt-1">{emailError}</p>
-                        )}
+                        {emailError && <p className="text-red-600 text-xs mt-1">{emailError}</p>}
                     </div>
 
+                    {/* Telefone */}
                     <div className="mb-3.5">
                         <label htmlFor="telefone" className="block text-black font-medium text-sm text-shadow">Telefone:</label>
-                        <input 
-                            id="telefone" 
-                            name="telefone" 
-                            type="text" 
-                            value={form.telefone} 
-                            onChange={handleForm} 
+                        <input
+                            id="telefone"
+                            name="telefone"
+                            type="text"
+                            value={form.telefone}
+                            onChange={handleForm}
                             placeholder="Digite o telefone"
-                            className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                            className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
+                                telefoneError ? 'border-red-500' : 'border-white/80'
+                            } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
                         />
+                        {telefoneError && <p className="text-red-600 text-xs mt-1">{telefoneError}</p>}
                     </div>
 
+                    {/* CNPJ */}
                     <div className="mb-3.5">
                         <label htmlFor="cnpj" className="block text-black font-medium text-sm text-shadow">CNPJ:</label>
-                        <input 
-                            id="cnpj" 
-                            name="cnpj" 
-                            type="text" 
-                            value={form.cnpj} 
-                            onChange={handleForm} 
+                        <input
+                            id="cnpj"
+                            name="cnpj"
+                            type="text"
+                            value={form.cnpj}
+                            onChange={handleForm}
                             placeholder="Digite o CNPJ"
                             className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
                                 cnpjError ? 'border-red-500' : 'border-white/80'
                             } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
                         />
-                        {cnpjError && (
-                            <p className="text-red-600 text-xs mt-1">{cnpjError}</p>
-                        )}
+                        {cnpjError && <p className="text-red-600 text-xs mt-1">{cnpjError}</p>}
                     </div>
 
+                    {/* Endereço */}
                     <div className="mb-3.5">
                         <label htmlFor="endereco" className="block text-black font-medium text-sm text-shadow">Endereço:</label>
-                        <input 
-                            id="endereco" 
-                            name="endereco" 
-                            type="text" 
-                            value={form.endereco} 
-                            onChange={handleForm} 
+                        <input
+                            id="endereco"
+                            name="endereco"
+                            type="text"
+                            value={form.endereco}
+                            onChange={handleForm}
                             placeholder="Digite o endereço"
-                            className="w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] border-white/80 bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus"
+                            className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
+                                enderecoError ? 'border-red-500' : 'border-white/80'
+                            } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
                         />
+                        {enderecoError && <p className="text-red-600 text-xs mt-1">{enderecoError}</p>}
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="w-full text-base rounded-2xl py-2.5 mt-4 bg-black text-white font-semibold rounded-md cursor-pointer transition-colors hover:bg-gray-800"
                     >
                         Cadastrar
                     </button>
-
+                    
                     <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
                         Ao clicar em continuar, você concorda com os nossos 
                         <a href="https://youtu.be/LHqRwGTP2qQ?si=ORCAvf9YCwXQYFSk" target="_blank" rel="noopener noreferrer" className="text-black underline hover:underline"> Termos de Serviço</a> e 
@@ -177,7 +216,6 @@ const MeuForm = ({ onSwitchToLogin }) => {
                             Faça login
                         </a>
                     </p>
-
                 </form>
             </div>
         </div>

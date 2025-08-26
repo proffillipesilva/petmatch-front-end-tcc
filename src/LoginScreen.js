@@ -21,14 +21,15 @@ const LoginScreen = ({ onSwitchToRegister }) => {
 
         {/* Bloco da logo com a imagem Frame1.png */}
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
-          <h2 className="logo-title">PetMatch</h2>
+        <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img
             src="/imgs/Frame1.png"
             alt="logo"
-            className="max-w-[120px] mt-2.5"
+            className="max-w-[200px] mt-2.5"
           />
         </div>
-
+        <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Entre na conta</h2>
+        <h2 className="flex flex-col items-center logo-title text-sm font-bold">Digite o seu e-mail para cadastrar no aplicativo</h2>
         <form onSubmit={handleLogin} className="w-full space-y-4">
           <div>
             <label htmlFor="email" className="block text-black font-medium text-sm text-left text-shadow">E-mail:</label>

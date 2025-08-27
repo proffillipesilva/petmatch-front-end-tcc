@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -7,16 +6,23 @@ module.exports = {
   theme: {
     extend: {
       keyframes: {
+        // EXISTENTE
         slideIn: {
           '0%': { transform: 'translateY(-100%)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        // NOVA animação lateral esquerda
+        slideInLeft: {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
       },
       animation: {
-        slideIn: 'slideIn 0.8s ease-out forwards',
+        'slide-in-up': 'slideIn 0.8s ease-out forwards',  // já existente
+        'slide-in-left': 'slideInLeft 0.5s ease-out forwards', // nova
       },
       backgroundImage: {
-        'auth-pattern': "url('../public/imgs/Auth.png')", // Adicione sua imagem de fundo
+        'auth-pattern': "url('../public/imgs/Auth.png')",
       },
       boxShadow: {
         'white-glow': '0 0 10px rgba(255, 255, 255, 0.5)',
@@ -28,9 +34,7 @@ module.exports = {
     },
   },
   plugins: [
-    // Se você estiver usando um plugin para text-shadow, instale-o e adicione aqui.
-    // Ex: require('tailwindcss-textshadow'),
-    function({ addUtilities }) {
+    function ({ addUtilities }) {
       const newUtilities = {
         '.text-shadow': {
           'text-shadow': '1px 1px 4px rgba(255,255,255,0.7)',

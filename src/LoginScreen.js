@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
+import React, { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+import api from "./api"; // importa a config do axios
 
-const LoginScreen = ({ onSwitchToRegister }) => {
+const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [form, setForm] = useState({ email: "", password: "" });
-
-  // Estados para mensagens de erro
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     let hasError = false;
 
-    // Validação de e-mail
     if (!form.email) {
       setEmailError("O e-mail é obrigatório!");
       hasError = true;
@@ -21,7 +20,6 @@ const LoginScreen = ({ onSwitchToRegister }) => {
       setEmailError("");
     }
 
-    // Validação de senha
     if (!form.password) {
       setPasswordError("A senha é obrigatória!");
       hasError = true;
@@ -31,15 +29,28 @@ const LoginScreen = ({ onSwitchToRegister }) => {
 
     if (hasError) return;
 
-    // Aqui iria a lógica de autenticação real
-    console.log("Tentativa de login com:", form);
-    alert('Tentativa de login!');
+    try {
+      setLoading(true);
+      const response = await api.post("/users/login", {
+        emailOng: form.email, // ⚡️ nome do campo igual ao backend
+        senha: form.password,
+      });
+
+      console.log("Login bem-sucedido:", response.data);
+      // chama callback do App pra autenticar
+      onLoginSuccess(response.data);
+
+    } catch (err) {
+      console.error("Erro ao logar:", err);
+      alert("E-mail ou senha inválidos!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForm = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
 
-    // Limpa erros ao digitar
     if (e.target.name === "email" && emailError) setEmailError("");
     if (e.target.name === "password" && passwordError) setPasswordError("");
   };
@@ -48,7 +59,6 @@ const LoginScreen = ({ onSwitchToRegister }) => {
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 bg-auth-pattern bg-cover bg-center bg-no-repeat text-[#333]">
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
 
-        {/* Logo */}
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img
@@ -62,7 +72,6 @@ const LoginScreen = ({ onSwitchToRegister }) => {
         <h2 className="flex flex-col items-center logo-title text-sm font-bold">Digite seu e-mail e senha para acessar</h2>
 
         <form onSubmit={handleLogin} className="w-full space-y-4">
-          {/* E-mail */}
           <div>
             <label htmlFor="email" className="block text-black font-medium text-sm text-left text-shadow">E-mail:</label>
             <input
@@ -73,13 +82,12 @@ const LoginScreen = ({ onSwitchToRegister }) => {
               onChange={handleForm}
               placeholder="exemplo@dominio.com"
               className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                emailError ? 'border-red-500' : 'border-white/80'
-              } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
+                emailError ? "border-red-500" : "border-white/80"
+              } bg-white/95 text-black`}
             />
             {emailError && <p className="text-red-600 text-xs mt-1">{emailError}</p>}
           </div>
 
-          {/* Senha */}
           <div>
             <label htmlFor="password" className="block text-black font-medium text-sm text-left text-shadow">Senha:</label>
             <input
@@ -90,17 +98,18 @@ const LoginScreen = ({ onSwitchToRegister }) => {
               onChange={handleForm}
               placeholder="Digite sua senha"
               className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                passwordError ? 'border-red-500' : 'border-white/80'
-              } bg-white/95 text-black transition-colors duration-200 shadow-white-glow placeholder:text-gray-600 focus:outline-none focus:border-[#ffd966] focus:bg-white/70 focus:shadow-yellow-glow-focus`}
+                passwordError ? "border-red-500" : "border-white/80"
+              } bg-white/95 text-black`}
             />
             {passwordError && <p className="text-red-600 text-xs mt-1">{passwordError}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full text-base rounded-2xl py-2.5 bg-black text-white font-semibold rounded-md cursor-pointer transition-colors hover:bg-gray-800"
+            disabled={loading}
+            className="w-full text-base rounded-2xl py-2.5 bg-black text-white font-semibold cursor-pointer transition-colors hover:bg-gray-800 disabled:opacity-50"
           >
-            Entrar
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
@@ -110,9 +119,7 @@ const LoginScreen = ({ onSwitchToRegister }) => {
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
-        <button
-          className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"
-        >
+        <button className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md">
           <span className="ml-4">
             <FcGoogle className="w-5 h-5" />
           </span>
@@ -122,7 +129,7 @@ const LoginScreen = ({ onSwitchToRegister }) => {
         </button>
 
         <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
-          Não tem uma conta?{' '}
+          Não tem uma conta?{" "}
           <a
             href="#"
             onClick={(e) => {
@@ -134,7 +141,6 @@ const LoginScreen = ({ onSwitchToRegister }) => {
             Cadastre-se
           </a>
         </p>
-
       </div>
     </div>
   );

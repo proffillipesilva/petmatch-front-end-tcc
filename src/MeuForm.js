@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import api from "./api";
 import { cnpj } from "cpf-cnpj-validator";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // usando react-icons
 
 const MeuForm = ({ onSwitchToLogin }) => {
   const [form, setForm] = useState({
@@ -11,7 +12,8 @@ const MeuForm = ({ onSwitchToLogin }) => {
     cnpj: "",
     endereco: "",
     senha: "",
-    confirmSenha: "", // novo campo
+    confirmSenha: "",
+    termos: false,
   });
 
   const [nomeError, setNomeError] = useState("");
@@ -21,7 +23,12 @@ const MeuForm = ({ onSwitchToLogin }) => {
   const [enderecoError, setEnderecoError] = useState("");
   const [senhaError, setSenhaError] = useState("");
   const [confirmSenhaError, setConfirmSenhaError] = useState("");
+  const [termosError, setTermosError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // estados para mostrar/ocultar senha
+  const [showSenha, setShowSenha] = useState(false);
+  const [showConfirmSenha, setShowConfirmSenha] = useState(false);
 
   const enviaServidor = async (e) => {
     e.preventDefault();
@@ -79,6 +86,12 @@ const MeuForm = ({ onSwitchToLogin }) => {
       hasError = true;
     } else setConfirmSenhaError("");
 
+    // Termos de uso
+    if (!form.termos) {
+      setTermosError("Você deve aceitar os termos de uso!");
+      hasError = true;
+    } else setTermosError("");
+
     if (hasError) return;
 
     try {
@@ -89,7 +102,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
         telefone: form.telefone,
         cnpj: form.cnpj,
         endereco: form.endereco,
-        senha: form.senha, // só envia a senha, não a confirmação
+        senha: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
       onSwitchToLogin();
@@ -102,8 +115,8 @@ const MeuForm = ({ onSwitchToLogin }) => {
   };
 
   const handleForm = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
 
     if (name === "nomeOng" && nomeError) setNomeError("");
     if (name === "emailOng" && emailError) setEmailError("");
@@ -112,6 +125,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
     if (name === "endereco" && enderecoError) setEnderecoError("");
     if (name === "senha" && senhaError) setSenhaError("");
     if (name === "confirmSenha" && confirmSenhaError) setConfirmSenhaError("");
+    if (name === "termos" && termosError) setTermosError("");
   };
 
   return (
@@ -223,42 +237,80 @@ const MeuForm = ({ onSwitchToLogin }) => {
           </div>
 
           {/* Senha */}
-          <div className="mb-3.5">
+          <div className="mb-3.5 relative">
             <label htmlFor="senha" className="block text-black font-medium text-sm text-shadow">
               Senha:
             </label>
             <input
               id="senha"
               name="senha"
-              type="password"
+              type={showSenha ? "text" : "password"}
               value={form.senha}
               onChange={handleForm}
               placeholder="Crie uma senha"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
+              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${
                 senhaError ? "border-red-500" : "border-white/80"
               } bg-white/95 text-black`}
             />
+            <button
+              type="button"
+              onClick={() => setShowSenha(!showSenha)}
+              className="absolute right-3 top-9 text-gray-500"
+            >
+              {showSenha ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
             {senhaError && <p className="text-red-600 text-xs mt-1">{senhaError}</p>}
           </div>
 
           {/* Confirmar Senha */}
-          <div className="mb-3.5">
+          <div className="mb-3.5 relative">
             <label htmlFor="confirmSenha" className="block text-black font-medium text-sm text-shadow">
               Confirmar Senha:
             </label>
             <input
               id="confirmSenha"
               name="confirmSenha"
-              type="password"
+              type={showConfirmSenha ? "text" : "password"}
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
+              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${
                 confirmSenhaError ? "border-red-500" : "border-white/80"
               } bg-white/95 text-black`}
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmSenha(!showConfirmSenha)}
+              className="absolute right-3 top-9 text-gray-500"
+            >
+              {showConfirmSenha ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
             {confirmSenhaError && <p className="text-red-600 text-xs mt-1">{confirmSenhaError}</p>}
           </div>
+
+          {/* Termos de uso */}
+          <div className="mb-3.5 flex items-center gap-2">
+            <input
+              id="termos"
+              name="termos"
+              type="checkbox"
+              checked={form.termos}
+              onChange={handleForm}
+              className="w-4 h-4 border-gray-400 rounded"
+            />
+            <label htmlFor="termos" className="text-sm text-black">
+              Aceito os{" "}
+              <a
+                href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-blue-600 hover:text-blue-800"
+              >
+                termos de uso
+              </a>
+            </label>
+          </div>
+          {termosError && <p className="text-red-600 text-xs mt-1">{termosError}</p>}
 
           <button
             type="submit"

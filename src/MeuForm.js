@@ -2,95 +2,80 @@
 import React, { useState } from "react";
 import api from "./api";
 import { cnpj } from "cpf-cnpj-validator";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // usando react-icons
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const MeuForm = ({ onSwitchToLogin }) => {
   const [form, setForm] = useState({
     nomeOng: "",
+    nomeFantasiaOng: "",  // novo
+    razaoSocialOng: "",   // novo
     emailOng: "",
     telefone: "",
     cnpj: "",
     endereco: "",
+    contatoOng: "",        // novo
     senha: "",
     confirmSenha: "",
     termos: false,
   });
 
   const [nomeError, setNomeError] = useState("");
+  const [nomeFantasiaError, setNomeFantasiaError] = useState("");
+  const [razaoSocialError, setRazaoSocialError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [telefoneError, setTelefoneError] = useState("");
   const [cnpjError, setCnpjError] = useState("");
   const [enderecoError, setEnderecoError] = useState("");
+  const [contatoOngError, setContatoOngError] = useState("");
   const [senhaError, setSenhaError] = useState("");
   const [confirmSenhaError, setConfirmSenhaError] = useState("");
   const [termosError, setTermosError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // estados para mostrar/ocultar senha
   const [showSenha, setShowSenha] = useState(false);
   const [showConfirmSenha, setShowConfirmSenha] = useState(false);
+
+  const handleForm = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+
+    if (name === "nomeOng") setNomeError("");
+    if (name === "nomeFantasiaOng") setNomeFantasiaError("");
+    if (name === "razaoSocialOng") setRazaoSocialError("");
+    if (name === "emailOng") setEmailError("");
+    if (name === "telefone") setTelefoneError("");
+    if (name === "cnpj") setCnpjError("");
+    if (name === "endereco") setEnderecoError("");
+    if (name === "contatoOng") setContatoOngError("");
+    if (name === "senha") setSenhaError("");
+    if (name === "confirmSenha") setConfirmSenhaError("");
+    if (name === "termos") setTermosError("");
+  };
 
   const enviaServidor = async (e) => {
     e.preventDefault();
     let hasError = false;
 
-    // Nome
-    if (!form.nomeOng) {
-      setNomeError("O nome é obrigatório!");
-      hasError = true;
-    } else setNomeError("");
+    if (!form.nomeOng) { setNomeError("O nome é obrigatório!"); hasError = true; }
+    if (!form.nomeFantasiaOng) { setNomeFantasiaError("O nome fantasia é obrigatório!"); hasError = true; }
+    if (!form.razaoSocialOng) { setRazaoSocialError("A razão social é obrigatória!"); hasError = true; }
 
-    // E-mail
     const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
-    if (!form.emailOng) {
-      setEmailError("O e-mail é obrigatório!");
-      hasError = true;
-    } else if (!emailRegex.test(form.emailOng)) {
-      setEmailError("Digite um e-mail válido que termine com '.com'");
-      hasError = true;
-    } else setEmailError("");
+    if (!form.emailOng) { setEmailError("O e-mail é obrigatório!"); hasError = true; }
+    else if (!emailRegex.test(form.emailOng)) { setEmailError("Digite um e-mail válido que termine com '.com'"); hasError = true; }
 
-    // Telefone
-    if (!form.telefone) {
-      setTelefoneError("O telefone é obrigatório!");
-      hasError = true;
-    } else setTelefoneError("");
+    if (!form.telefone) { setTelefoneError("O telefone é obrigatório!"); hasError = true; }
+    if (!form.cnpj) { setCnpjError("O CNPJ é obrigatório!"); hasError = true; }
+    else if (!cnpj.isValid(form.cnpj)) { setCnpjError("CNPJ inválido!"); hasError = true; }
 
-    // CNPJ
-    if (!form.cnpj) {
-      setCnpjError("O CNPJ é obrigatório!");
-      hasError = true;
-    } else if (!cnpj.isValid(form.cnpj)) {
-      setCnpjError("CNPJ inválido!");
-      hasError = true;
-    } else setCnpjError("");
+    if (!form.endereco) { setEnderecoError("O endereço é obrigatório!"); hasError = true; }
+    if (!form.contatoOng) { setContatoOngError("O contato da ONG é obrigatório!"); hasError = true; }
 
-    // Endereço
-    if (!form.endereco) {
-      setEnderecoError("O endereço é obrigatório!");
-      hasError = true;
-    } else setEnderecoError("");
+    if (!form.senha) { setSenhaError("A senha é obrigatória!"); hasError = true; }
+    if (!form.confirmSenha) { setConfirmSenhaError("A confirmação da senha é obrigatória!"); hasError = true; }
+    else if (form.senha !== form.confirmSenha) { setConfirmSenhaError("As senhas não coincidem!"); hasError = true; }
 
-    // Senha
-    if (!form.senha) {
-      setSenhaError("A senha é obrigatória!");
-      hasError = true;
-    } else setSenhaError("");
-
-    // Confirmar Senha
-    if (!form.confirmSenha) {
-      setConfirmSenhaError("A confirmação da senha é obrigatória!");
-      hasError = true;
-    } else if (form.senha !== form.confirmSenha) {
-      setConfirmSenhaError("As senhas não coincidem!");
-      hasError = true;
-    } else setConfirmSenhaError("");
-
-    // Termos de uso
-    if (!form.termos) {
-      setTermosError("Você deve aceitar os termos de uso!");
-      hasError = true;
-    } else setTermosError("");
+    if (!form.termos) { setTermosError("Você deve aceitar os termos de uso!"); hasError = true; }
 
     if (hasError) return;
 
@@ -98,10 +83,13 @@ const MeuForm = ({ onSwitchToLogin }) => {
       setLoading(true);
       await api.post("/users", {
         nomeOng: form.nomeOng,
+        nomeFantasiaOng: form.nomeFantasiaOng,
+        razaoSocialOng: form.razaoSocialOng,
         emailOng: form.emailOng,
         telefone: form.telefone,
         cnpj: form.cnpj,
         endereco: form.endereco,
+        contatoOng: form.contatoOng,
         senha: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
@@ -112,20 +100,6 @@ const MeuForm = ({ onSwitchToLogin }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleForm = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
-
-    if (name === "nomeOng" && nomeError) setNomeError("");
-    if (name === "emailOng" && emailError) setEmailError("");
-    if (name === "telefone" && telefoneError) setTelefoneError("");
-    if (name === "cnpj" && cnpjError) setCnpjError("");
-    if (name === "endereco" && enderecoError) setEnderecoError("");
-    if (name === "senha" && senhaError) setSenhaError("");
-    if (name === "confirmSenha" && confirmSenhaError) setConfirmSenhaError("");
-    if (name === "termos" && termosError) setTermosError("");
   };
 
   return (
@@ -143,9 +117,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
         <form onSubmit={enviaServidor} className="w-full">
           {/* Nome */}
           <div className="mb-3.5">
-            <label htmlFor="nomeOng" className="block text-black font-medium text-sm text-shadow">
-              Nome:
-            </label>
+            <label htmlFor="nomeOng" className="block text-black font-medium text-sm">Nome:</label>
             <input
               id="nomeOng"
               name="nomeOng"
@@ -153,18 +125,59 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.nomeOng}
               onChange={handleForm}
               placeholder="Digite o nome"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                nomeError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${nomeError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             {nomeError && <p className="text-red-600 text-xs mt-1">{nomeError}</p>}
           </div>
 
-          {/* Email */}
+          {/* Nome Fantasia */}
           <div className="mb-3.5">
-            <label htmlFor="emailOng" className="block text-black font-medium text-sm text-shadow">
-              E-mail:
-            </label>
+            <label htmlFor="nomeFantasiaOng" className="block text-black font-medium text-sm">Nome Fantasia:</label>
+            <input
+              id="nomeFantasiaOng"
+              name="nomeFantasiaOng"
+              type="text"
+              value={form.nomeFantasiaOng}
+              onChange={handleForm}
+              placeholder="Digite o nome fantasia"
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${nomeFantasiaError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+            />
+            {nomeFantasiaError && <p className="text-red-600 text-xs mt-1">{nomeFantasiaError}</p>}
+          </div>
+
+          {/* Razão Social */}
+          <div className="mb-3.5">
+            <label htmlFor="razaoSocialOng" className="block text-black font-medium text-sm">Razão Social:</label>
+            <input
+              id="razaoSocialOng"
+              name="razaoSocialOng"
+              type="text"
+              value={form.razaoSocialOng}
+              onChange={handleForm}
+              placeholder="Digite a razão social"
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${razaoSocialError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+            />
+            {razaoSocialError && <p className="text-red-600 text-xs mt-1">{razaoSocialError}</p>}
+          </div>
+
+          {/* Contato ONG */}
+          <div className="mb-3.5">
+            <label htmlFor="contatoOng" className="block text-black font-medium text-sm">Contato da ONG:</label>
+            <input
+              id="contatoOng"
+              name="contatoOng"
+              type="text"
+              value={form.contatoOng}
+              onChange={handleForm}
+              placeholder="Nome do funcionário responsável"
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${contatoOngError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+            />
+            {contatoOngError && <p className="text-red-600 text-xs mt-1">{contatoOngError}</p>}
+          </div>
+
+          {/* E-mail */}
+          <div className="mb-3.5">
+            <label htmlFor="emailOng" className="block text-black font-medium text-sm">E-mail:</label>
             <input
               id="emailOng"
               name="emailOng"
@@ -172,18 +185,14 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.emailOng}
               onChange={handleForm}
               placeholder="Digite o e-mail"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                emailError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${emailError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             {emailError && <p className="text-red-600 text-xs mt-1">{emailError}</p>}
           </div>
 
           {/* Telefone */}
           <div className="mb-3.5">
-            <label htmlFor="telefone" className="block text-black font-medium text-sm text-shadow">
-              Telefone:
-            </label>
+            <label htmlFor="telefone" className="block text-black font-medium text-sm">Telefone:</label>
             <input
               id="telefone"
               name="telefone"
@@ -191,18 +200,14 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.telefone}
               onChange={handleForm}
               placeholder="Digite o telefone"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                telefoneError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${telefoneError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             {telefoneError && <p className="text-red-600 text-xs mt-1">{telefoneError}</p>}
           </div>
 
           {/* CNPJ */}
           <div className="mb-3.5">
-            <label htmlFor="cnpj" className="block text-black font-medium text-sm text-shadow">
-              CNPJ:
-            </label>
+            <label htmlFor="cnpj" className="block text-black font-medium text-sm">CNPJ:</label>
             <input
               id="cnpj"
               name="cnpj"
@@ -210,18 +215,14 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.cnpj}
               onChange={handleForm}
               placeholder="Digite o CNPJ"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                cnpjError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${cnpjError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             {cnpjError && <p className="text-red-600 text-xs mt-1">{cnpjError}</p>}
           </div>
 
           {/* Endereço */}
           <div className="mb-3.5">
-            <label htmlFor="endereco" className="block text-black font-medium text-sm text-shadow">
-              Endereço:
-            </label>
+            <label htmlFor="endereco" className="block text-black font-medium text-sm">Endereço:</label>
             <input
               id="endereco"
               name="endereco"
@@ -229,18 +230,14 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.endereco}
               onChange={handleForm}
               placeholder="Digite o endereço"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                enderecoError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${enderecoError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             {enderecoError && <p className="text-red-600 text-xs mt-1">{enderecoError}</p>}
           </div>
 
           {/* Senha */}
           <div className="mb-3.5 relative">
-            <label htmlFor="senha" className="block text-black font-medium text-sm text-shadow">
-              Senha:
-            </label>
+            <label htmlFor="senha" className="block text-black font-medium text-sm">Senha:</label>
             <input
               id="senha"
               name="senha"
@@ -248,25 +245,21 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.senha}
               onChange={handleForm}
               placeholder="Crie uma senha"
-              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${
-                senhaError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${senhaError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             <button
               type="button"
               onClick={() => setShowSenha(!showSenha)}
               className="absolute right-3 top-9 text-gray-500"
             >
-              {showSenha ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {senhaError && <p className="text-red-600 text-xs mt-1">{senhaError}</p>}
           </div>
 
           {/* Confirmar Senha */}
           <div className="mb-3.5 relative">
-            <label htmlFor="confirmSenha" className="block text-black font-medium text-sm text-shadow">
-              Confirmar Senha:
-            </label>
+            <label htmlFor="confirmSenha" className="block text-black font-medium text-sm">Confirmar Senha:</label>
             <input
               id="confirmSenha"
               name="confirmSenha"
@@ -274,16 +267,14 @@ const MeuForm = ({ onSwitchToLogin }) => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${
-                confirmSenhaError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${confirmSenhaError ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
             <button
               type="button"
               onClick={() => setShowConfirmSenha(!showConfirmSenha)}
               className="absolute right-3 top-9 text-gray-500"
             >
-              {showConfirmSenha ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showConfirmSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {confirmSenhaError && <p className="text-red-600 text-xs mt-1">{confirmSenhaError}</p>}
           </div>
@@ -320,14 +311,11 @@ const MeuForm = ({ onSwitchToLogin }) => {
             {loading ? "Cadastrando..." : "Cadastrar"}
           </button>
 
-          <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
+          <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
             <a
               href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onSwitchToLogin();
-              }}
+              onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}
               className="underline text-black hover:text-gray-700"
             >
               Faça login

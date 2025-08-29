@@ -1,8 +1,8 @@
-// src/LoginScreen.jsx
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import api from "./api"; // importa a config do axios
+import { useGoogleLogin } from "@react-oauth/google"; // Importa o hook
+import api from "./api";
 
 const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -10,6 +10,43 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // 👁️ controle do olhinho
+
+  // Função para login com Google
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // tokenResponse.access_token é o token do Google
+        // Aqui você pode usar esse token para pegar infos do usuário,
+        // ou mandar pro seu backend verificar e autenticar
+
+        // Exemplo: pegar perfil do Google direto na API
+        const res = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
+        );
+        const userInfo = await res.json();
+
+        // Aqui você pode adaptar para mandar pro backend criar/validar usuário
+        // Por enquanto, só envia direto pro app como login bem sucedido
+        onLoginSuccess({
+          nomeOng: userInfo.name,
+          emailOng: userInfo.email,
+          googleId: userInfo.sub,
+          picture: userInfo.picture,
+        });
+      } catch (error) {
+        console.error("Erro ao pegar dados do Google:", error);
+        alert("Falha no login com Google");
+      }
+    },
+    onError: () => {
+      alert("Login com Google falhou");
+    },
+  });
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -136,7 +173,11 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
-        <button className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md">
+        {/* Botão Google com o estilo anterior */}
+        <button
+          onClick={() => loginWithGoogle()}
+          className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"
+        >
           <span className="ml-4">
             <FcGoogle className="w-5 h-5" />
           </span>

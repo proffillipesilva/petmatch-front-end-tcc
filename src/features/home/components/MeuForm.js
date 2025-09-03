@@ -1,8 +1,11 @@
 // src/MeuForm.jsx
 import React, { useState } from "react";
-import api from "./api";
+import api from "../../../shared/utils/api";
 import { cnpj } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import Frame1 from "../../../images/Frame1.png";
+import AuthImg from "../../../images/Auth.png";
 
 const MeuForm = ({ onSwitchToLogin }) => {
   const [form, setForm] = useState({
@@ -107,8 +110,8 @@ const MeuForm = ({ onSwitchToLogin }) => {
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
-          <img src="/imgs/Frame1.png" alt="logo" className="max-w-[200px] mt-2.5" />
-          <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Crie uma conta</h2>
+          <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
+          <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Crie uma conta da sua ONG!</h2>
           <h2 className="flex flex-col items-center logo-title text-sm font-bold">
             Digite seus dados para cadastrar no aplicativo
           </h2>
@@ -290,7 +293,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
               className="w-4 h-4 border-gray-400 rounded"
             />
             <label htmlFor="termos" className="text-sm text-black">
-              Aceito os{" "}
+              Li e aceito os{" "}
               <a
                 href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k"
                 target="_blank"

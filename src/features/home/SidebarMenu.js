@@ -8,8 +8,12 @@ import {
   FaBars,
 } from 'react-icons/fa';
 
-const SidebarMenu = ({ onNavigate }) => {
+// O componente agora recebe apenas o nome do usuário como uma propriedade
+const SidebarMenu = ({ onNavigate, userName }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // A mensagem de boas-vindas usa a nova propriedade userName
+  const welcomeMessage = userName ? `Olá, ${userName}` : 'Bem-vindo(a)';
 
   return (
     <>
@@ -29,7 +33,7 @@ const SidebarMenu = ({ onNavigate }) => {
         {/* Topo - Usuário */}
         <div className="flex flex-col items-center mb-8">
           <FaUserCircle className="text-5xl text-gray-700" />
-          <span className="mt-2 font-semibold text-lg">Usuário</span>
+          <span className="mt-2 font-semibold text-lg">{welcomeMessage}</span>
         </div>
 
         {/* Navegação */}

@@ -18,11 +18,11 @@ module.exports = {
         },
       },
       animation: {
-        'slide-in-up': 'slideIn 0.8s ease-out forwards',  // já existente
-        'slide-in-left': 'slideInLeft 0.5s ease-out forwards', // nova
+        'slideIn': 'slideIn 0.8s ease-out forwards', // CORRIGIDO AQUI
+        'slide-in-left': 'slideInLeft 0.5s ease-out forwards',
       },
       backgroundImage: {
-        'auth-pattern': "url('../public/imgs/Auth.png')",
+        'auth-pattern': "url('../src/images/Auth.png')",
       },
       boxShadow: {
         'white-glow': '0 0 10px rgba(255, 255, 255, 0.5)',

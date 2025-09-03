@@ -1,25 +1,24 @@
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useGoogleLogin } from "@react-oauth/google"; // Importa o hook
-import api from "./api";
+import { useGoogleLogin } from "@react-oauth/google";
+import api from "../../../shared/utils/api";
+
+// Importando imagens corretamente
+import Frame1 from "../../../images/Frame1.png";
+import AuthImg from "../../../images/Auth.png";
 
 const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 👁️ controle do olhinho
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginType, setLoginType] = useState("adotante");
 
-  // Função para login com Google
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // tokenResponse.access_token é o token do Google
-        // Aqui você pode usar esse token para pegar infos do usuário,
-        // ou mandar pro seu backend verificar e autenticar
-
-        // Exemplo: pegar perfil do Google direto na API
         const res = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
@@ -30,8 +29,6 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
         );
         const userInfo = await res.json();
 
-        // Aqui você pode adaptar para mandar pro backend criar/validar usuário
-        // Por enquanto, só envia direto pro app como login bem sucedido
         onLoginSuccess({
           nomeOng: userInfo.name,
           emailOng: userInfo.email,
@@ -71,13 +68,22 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
 
     try {
       setLoading(true);
-      const response = await api.post("/users/login", {
-        emailOng: form.email, // ⚡️ nome do campo igual ao backend
-        senha: form.password,
-      });
+      let response;
+
+      if (loginType === "adotante") {
+        response = await api.post("/adotantes/login", {
+          emailAdotante: form.email,
+          senha: form.password,
+        });
+      } else {
+        response = await api.post("/users/login", {
+          emailOng: form.email,
+          senha: form.password,
+        });
+      }
 
       console.log("Login bem-sucedido:", response.data);
-      onLoginSuccess(response.data); // chama callback do App pra autenticar
+      onLoginSuccess(response.data);
     } catch (err) {
       console.error("Erro ao logar:", err);
       alert("E-mail ou senha inválidos!");
@@ -98,7 +104,7 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
-          <img src="/imgs/Frame1.png" alt="logo" className="max-w-[200px] mt-2.5" />
+          <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
         </div>
 
         <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Entre na conta</h2>
@@ -106,8 +112,31 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           Digite seu e-mail e senha para acessar
         </h2>
 
+        {/* Chave de seleção estilizada para seguir o design do site */}
+        <div className="flex justify-center my-4 w-full">
+          <button
+            onClick={() => setLoginType("adotante")}
+            className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
+              loginType === "adotante"
+                ? "bg-black text-white"
+                : "bg-amber-200 text-black"
+            }`}
+          >
+            Adotante
+          </button>
+          <button
+            onClick={() => setLoginType("ong")}
+            className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
+              loginType === "ong"
+                ? "bg-black text-white"
+                : "bg-amber-200 text-black"
+            }`}
+          >
+            ONG
+          </button>
+        </div>
+
         <form onSubmit={handleLogin} className="w-full space-y-4">
-          {/* Email */}
           <div>
             <label
               htmlFor="email"
@@ -129,7 +158,6 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
             {emailError && <p className="text-red-600 text-xs mt-1">{emailError}</p>}
           </div>
 
-          {/* Senha com olhinho 👁️ */}
           <div className="relative">
             <label
               htmlFor="password"
@@ -173,7 +201,6 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
-        {/* Botão Google com o estilo anterior */}
         <button
           onClick={() => loginWithGoogle()}
           className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"

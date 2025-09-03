@@ -1,77 +1,86 @@
-import React, { useState } from 'react';
-import {
-  FaHome,
-  FaPaw,
-  FaStar,
-  FaSignOutAlt,
-  FaUserCircle,
-  FaBars,
-} from 'react-icons/fa';
+import React, { useState } from "react";
+import { FaHome, FaPaw, FaStar, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 
-// O componente agora recebe apenas o nome do usuário como uma propriedade
 const SidebarMenu = ({ onNavigate, userName }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // A mensagem de boas-vindas usa a nova propriedade userName
-  const welcomeMessage = userName ? `Olá, ${userName}` : 'Bem-vindo(a)';
+  const [menuOpen, setMenuOpen] = useState(false);
+  const welcomeMessage = userName ? `Olá, ${userName}` : "Bem-vindo(a)";
 
   return (
-    <>
-      {/* Botão hamburger fixo no canto superior esquerdo */}
-      <button
-        className="fixed top-4 left-4 z-20 text-2xl text-gray-800 bg-white/80 rounded-md p-2 shadow-md hover:bg-gray-200 transition"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <FaBars />
-      </button>
-
-      {/* Sidebar que aparece e desaparece */}
-      <aside
-        className={`fixed top-0 left-0 h-screen w-64 bg-white shadow-md flex flex-col p-5 z-10 transform transition-transform duration-300 
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        {/* Topo - Usuário */}
-        <div className="flex flex-col items-center mb-8">
-          <FaUserCircle className="text-5xl text-gray-700" />
-          <span className="mt-2 font-semibold text-lg">{welcomeMessage}</span>
+    <header className="w-full bg-white shadow-md fixed top-0 left-0 z-20">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+        {/* Logo */}
+        <div
+          onClick={() => onNavigate("inicio")}
+          className="font-bold text-xl text-gray-800 cursor-pointer"
+        >
+          PetMatch
         </div>
 
-        {/* Navegação */}
-        <nav className="flex flex-col gap-3 text-gray-800">
+        {/* Links principais */}
+        <nav className="flex items-center gap-6 text-gray-700">
           <button
-            onClick={() => onNavigate('inicio')}
-            className="flex items-center gap-3 hover:bg-gray-200 px-4 py-2 rounded transition"
+            onClick={() => onNavigate("inicio")}
+            className="flex items-center gap-2 hover:text-yellow-500 transition"
           >
-            <FaHome />
-            Início
+            <FaHome /> Início
           </button>
 
           <button
-            onClick={() => onNavigate('adotar')}
-            className="flex items-center gap-3 hover:bg-gray-200 px-4 py-2 rounded transition"
+            onClick={() => onNavigate("adotar")}
+            className="flex items-center gap-2 hover:text-yellow-500 transition"
           >
-            <FaPaw />
-            Adotar
+            <FaPaw /> Adotar
           </button>
 
           <button
-            onClick={() => onNavigate('novidades')}
-            className="flex items-center gap-3 hover:bg-gray-200 px-4 py-2 rounded transition"
+            onClick={() => onNavigate("novidades")}
+            className="flex items-center gap-2 hover:text-yellow-500 transition"
           >
-            <FaStar />
-            Novidades
-          </button>
-
-          <button
-            onClick={() => onNavigate('sair')}
-            className="flex items-center gap-3 hover:bg-gray-200 px-4 py-2 rounded transition"
-          >
-            <FaSignOutAlt />
-            Sair
+            <FaStar /> Novidades
           </button>
         </nav>
-      </aside>
-    </>
+
+        {/* Usuário */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-2 text-gray-700 hover:text-yellow-500"
+          >
+            <FaUserCircle size={24} />
+            <span>{welcomeMessage}</span>
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg">
+              {!userName ? (
+                <>
+                  <button
+                    onClick={() => onNavigate("login")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Entrar
+                  </button>
+                  <button
+                    onClick={() => onNavigate("tipoCadastro")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Cadastra-se
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => onNavigate("sair")}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  <FaSignOutAlt className="inline mr-2" />
+                  Sair
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
   );
 };
 

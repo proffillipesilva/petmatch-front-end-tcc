@@ -5,9 +5,8 @@ import { cpf } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Frame1 from "../../../images/Frame1.png";
-import AuthImg from "../../../images/Auth.png";
 
-const AdotanteForm = ({ onSwitchToLogin }) => {
+const AdotanteForm = ({ onBackToLogin }) => {
   const [form, setForm] = useState({
     nomeAdotante: "",
     cpfAdotante: "",
@@ -57,18 +56,9 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
 
     try {
       setLoading(true);
-      await api.post("/adotantes", {
-        nomeAdotante: form.nomeAdotante,
-        cpfAdotante: form.cpfAdotante,
-        enderecoAdotante: form.enderecoAdotante,
-        celularAdotante: form.celularAdotante,
-        emailAdotante: form.emailAdotante,
-        descricaoOutrosAnimais: form.descricaoOutrosAnimais,
-        preferencia: form.preferencia,
-        senha: form.senha,
-      });
+      await api.post("/adotantes", { ...form });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      onSwitchToLogin();
+      onBackToLogin();
     } catch (err) {
       console.error(err);
       alert("Erro ao cadastrar. Tente novamente.");
@@ -192,7 +182,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
             Já tem uma conta?{" "}
             <a
               href="#"
-              onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}
+              onClick={(e) => { e.preventDefault(); onBackToLogin(); }}
               className="underline text-black hover:text-gray-700"
             >
               Faça login

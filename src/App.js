@@ -29,6 +29,7 @@ function App() {
     setCurrentScreen("inicio");
   };
 
+  // Navegação interna
   const handleSwitchToTipoCadastro = () => setCurrentScreen("tipoCadastro");
   const handleSwitchToAdotanteForm = () => setCurrentScreen("registerAdotante");
   const handleSwitchToOngForm = () => setCurrentScreen("registerOng");
@@ -39,7 +40,7 @@ function App() {
       <div className="flex min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
         <SidebarMenu
           onNavigate={handleNavigation}
-          user={user}
+          userName={user?.nomeOng || user?.nomeAdotante}
         />
 
         <main className="pt-20 w-full p-6">
@@ -59,18 +60,17 @@ function App() {
           )}
 
           {!isAuthenticated && currentScreen === "registerAdotante" && (
-            <AdotanteForm onBackToLogin={handleSwitchToLogin} onCadastroSuccess={handleLoginSuccess} />
+            <AdotanteForm onBackToLogin={handleSwitchToLogin} />
           )}
 
           {!isAuthenticated && currentScreen === "registerOng" && (
-            <MeuForm onBackToLogin={handleSwitchToLogin} onCadastroSuccess={handleLoginSuccess} />
+            <MeuForm onBackToLogin={handleSwitchToLogin} />
           )}
 
           {currentScreen === "inicio" && (
             <div>
               <h1 className="text-4xl font-bold mb-2">
-                {/* CORREÇÃO: Verifica nomeOng OU nome_adotante */}
-                Bem-vindo(a) {user?.nomeOng || user?.nome_adotante || "ao PetMatch"}
+                Bem-vindo(a) {user?.nomeOng || user?.nomeAdotante || "ao PetMatch"}
               </h1>
               <p className="text-gray-600 mb-6">
                 Escolha uma ONG para ver os animais disponíveis para adoção

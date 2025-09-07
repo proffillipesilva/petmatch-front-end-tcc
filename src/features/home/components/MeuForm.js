@@ -5,7 +5,7 @@ import { cnpj } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Frame1 from "../../../images/Frame1.png";
 
-const MeuForm = ({ onBackToLogin, onCadastroSuccess }) => {
+const MeuForm = ({ onSwitchToLogin }) => {
   const [form, setForm] = useState({
     nomeOng: "",
     nomeFantasiaOng: "",
@@ -38,8 +38,11 @@ const MeuForm = ({ onBackToLogin, onCadastroSuccess }) => {
     if (!form.nomeOng) tempErrors.nomeOng = "O nome é obrigatório!";
     if (!form.nomeFantasiaOng) tempErrors.nomeFantasiaOng = "O nome fantasia é obrigatório!";
     if (!form.razaoSocialOng) tempErrors.razaoSocialOng = "A razão social é obrigatória!";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
     if (!form.emailOng) tempErrors.emailOng = "O e-mail é obrigatório!";
-    else if (!/^[^\s@]+@[^\s@]+\.com$/.test(form.emailOng)) tempErrors.emailOng = "Digite um e-mail válido que termine com '.com'";
+    else if (!emailRegex.test(form.emailOng)) tempErrors.emailOng = "Digite um e-mail válido que termine com '.com'";
+
     if (!form.telefone) tempErrors.telefone = "O telefone é obrigatório!";
     if (!form.cnpj) tempErrors.cnpj = "O CNPJ é obrigatório!";
     else if (!cnpj.isValid(form.cnpj)) tempErrors.cnpj = "CNPJ inválido!";
@@ -55,23 +58,21 @@ const MeuForm = ({ onBackToLogin, onCadastroSuccess }) => {
       return;
     }
 
-    setLoading(true);
-
-    const payload = {
-      nomeOng: form.nomeOng,
-      nomeFantasiaOng: form.nomeFantasiaOng,
-      razaoSocialOng: form.razaoSocialOng,
-      emailOng: form.emailOng,
-      telefone: form.telefone,
-      cnpj: form.cnpj,
-      endereco: form.endereco,
-      contatoOng: form.contatoOng,
-      senha: form.senha,
-    };
-
     try {
-      const response = await api.post("/users", payload);
-      onCadastroSuccess(response.data); // <-- atualiza user e vai para "inicio"
+      setLoading(true);
+      await api.post("/users", {
+        nomeOng: form.nomeOng,
+        nomeFantasiaOng: form.nomeFantasiaOng,
+        razaoSocialOng: form.razaoSocialOng,
+        emailOng: form.emailOng,
+        telefone: form.telefone,
+        cnpj: form.cnpj,
+        endereco: form.endereco,
+        contatoOng: form.contatoOng,
+        senha: form.senha,
+      });
+      alert("Cadastro realizado com sucesso! Faça login para continuar.");
+      onSwitchToLogin();
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -169,7 +170,9 @@ const MeuForm = ({ onBackToLogin, onCadastroSuccess }) => {
             />
             <label htmlFor="termos" className="text-sm text-black">
               Li e aceito os{" "}
-              <a href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">termos de uso</a>
+              <a href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">
+                termos de uso
+              </a>
             </label>
           </div>
           {errors.termos && <p className="text-red-600 text-xs mt-1">{errors.termos}</p>}
@@ -184,7 +187,9 @@ const MeuForm = ({ onBackToLogin, onCadastroSuccess }) => {
 
           <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
-            <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin(); }} className="underline text-black hover:text-gray-700">Faça login</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }} className="underline text-black hover:text-gray-700">
+              Faça login
+            </a>
           </p>
         </form>
       </div>

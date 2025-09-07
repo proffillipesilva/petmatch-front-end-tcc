@@ -1,12 +1,12 @@
+// src/LoginScreen.jsx
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import api from "../../../shared/utils/api";
 
-// Importando imagens corretamente
 import Frame1 from "../../../images/Frame1.png";
-import AuthImg from "../../../images/Auth.png";
+import AuthImg from "../../../images/Auth.png"; // Caso queira usar depois
 
 const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -22,9 +22,7 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
         const res = await fetch(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
           }
         );
         const userInfo = await res.json();
@@ -40,48 +38,32 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
         alert("Falha no login com Google");
       }
     },
-    onError: () => {
-      alert("Login com Google falhou");
-    },
+    onError: () => alert("Login com Google falhou"),
   });
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     let hasError = false;
 
-    if (!form.email) {
-      setEmailError("O e-mail é obrigatório!");
-      hasError = true;
-    } else {
-      setEmailError("");
-    }
+    if (!form.email) { setEmailError("O e-mail é obrigatório!"); hasError = true; } 
+    else setEmailError("");
 
-    if (!form.password) {
-      setPasswordError("A senha é obrigatória!");
-      hasError = true;
-    } else {
-      setPasswordError("");
-    }
+    if (!form.password) { setPasswordError("A senha é obrigatória!"); hasError = true; } 
+    else setPasswordError("");
 
     if (hasError) return;
 
     try {
       setLoading(true);
-      let response;
+      const payload =
+        loginType === "adotante"
+          ? { emailAdotante: form.email, senha: form.password }
+          : { emailOng: form.email, senha: form.password };
 
-      if (loginType === "adotante") {
-        response = await api.post("/adotantes/login", {
-          emailAdotante: form.email,
-          senha: form.password,
-        });
-      } else {
-        response = await api.post("/users/login", {
-          emailOng: form.email,
-          senha: form.password,
-        });
-      }
+      const endpoint =
+        loginType === "adotante" ? "/adotantes/login" : "/users/login";
 
+      const response = await api.post(endpoint, payload);
       console.log("Login bem-sucedido:", response.data);
       onLoginSuccess(response.data);
     } catch (err) {
@@ -93,55 +75,43 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   };
 
   const handleForm = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-    if (e.target.name === "email" && emailError) setEmailError("");
-    if (e.target.name === "password" && passwordError) setPasswordError("");
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    if (name === "email") setEmailError("");
+    if (name === "password") setPasswordError("");
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 bg-auth-pattern bg-cover bg-center bg-no-repeat text-[#333]">
+    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
-        <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
+        <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
         </div>
 
-        <h2 className="flex flex-col items-center logo-title text-2xl font-bold">Entre na conta</h2>
-        <h2 className="flex flex-col items-center logo-title text-sm font-bold">
+        <h2 className="text-2xl font-bold text-center">Entre na conta</h2>
+        <p className="text-sm font-bold text-center mb-4">
           Digite seu e-mail e senha para acessar
-        </h2>
+        </p>
 
-        {/* Chave de seleção estilizada para seguir o design do site */}
-        <div className="flex justify-center my-4 w-full">
-          <button
-            onClick={() => setLoginType("adotante")}
-            className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
-              loginType === "adotante"
-                ? "bg-black text-white"
-                : "bg-amber-200 text-black"
-            }`}
-          >
-            Adotante
-          </button>
-          <button
-            onClick={() => setLoginType("ong")}
-            className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
-              loginType === "ong"
-                ? "bg-black text-white"
-                : "bg-amber-200 text-black"
-            }`}
-          >
-            ONG
-          </button>
+        {/* Seleção de tipo de login */}
+        <div className="flex justify-center mb-4 w-full gap-2">
+          {["adotante", "ong"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setLoginType(type)}
+              className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
+                loginType === type ? "bg-black text-white" : "bg-amber-200 text-black"
+              }`}
+            >
+              {type === "adotante" ? "Adotante" : "ONG"}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={handleLogin} className="w-full space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-black font-medium text-sm text-left text-shadow"
-            >
+            <label htmlFor="email" className="block text-black font-medium text-sm">
               E-mail:
             </label>
             <input
@@ -159,10 +129,7 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           </div>
 
           <div className="relative">
-            <label
-              htmlFor="password"
-              className="block text-black font-medium text-sm text-left text-shadow"
-            >
+            <label htmlFor="password" className="block text-black font-medium text-sm">
               Senha:
             </label>
             <input
@@ -197,30 +164,23 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
 
         <div className="flex items-center my-6">
           <hr className="flex-grow border-t border-gray-300" />
-          <span className="px-4 text-gray-500 text-lg text-shadow"> ou continue com </span>
+          <span className="px-4 text-gray-500 text-lg">ou continue com</span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
         <button
           onClick={() => loginWithGoogle()}
-          className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"
+          className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center justify-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"
         >
-          <span className="ml-4">
-            <FcGoogle className="w-5 h-5" />
-          </span>
-          <span className="absolute left-1/2 transform -translate-x-1/2 text-black font-medium">
-            Google
-          </span>
+          <FcGoogle className="w-5 h-5 absolute left-4" />
+          <span className="text-black font-medium">Google</span>
         </button>
 
-        <p className="mt-6 text-lg text-gray-500 text-center text-shadow">
+        <p className="mt-6 text-lg text-gray-500 text-center">
           Não tem uma conta?{" "}
           <a
             href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              onSwitchToRegister();
-            }}
+            onClick={(e) => { e.preventDefault(); onSwitchToRegister(); }}
             className="underline text-black hover:text-gray-700"
           >
             Cadastre-se

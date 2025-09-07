@@ -1,27 +1,23 @@
 // src/App.jsx
 import React, { useState } from "react";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import SidebarMenu from "./features/home/SidebarMenu";
 import LoginScreen from "./features/home/components/LoginScreen";
-import MeuForm from "./features/home/components/MeuForm"; // Formulário ONG
-import AdotanteForm from "./features/home/components/AdotanteForm"; // Formulário Usuário/Adotante
-import TipoCadastro from "./features/home/components/TipoCadastro"; // Tela de escolha de cadastro
-import { GoogleOAuthProvider } from "@react-oauth/google";
+import TipoCadastro from "./features/home/components/TipoCadastro";
+import MeuForm from "./features/home/components/MeuForm";
+import AdotanteForm from "./features/home/components/AdotanteForm";
 import "./index.css";
-
-import Frame1 from "./images/Frame1.png";
-import AuthImage from './images/Auth.png';
-
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState("login");
+  const [currentScreen, setCurrentScreen] = useState("inicio");
   const [user, setUser] = useState(null);
 
   const handleNavigation = (screen) => {
     if (screen === "sair") {
       setIsAuthenticated(false);
-      setCurrentScreen("login");
       setUser(null);
+      setCurrentScreen("inicio");
     } else {
       setCurrentScreen(screen);
     }
@@ -33,7 +29,6 @@ function App() {
     setCurrentScreen("inicio");
   };
 
-  // Funções para navegar entre telas
   const handleSwitchToTipoCadastro = () => setCurrentScreen("tipoCadastro");
   const handleSwitchToAdotanteForm = () => setCurrentScreen("registerAdotante");
   const handleSwitchToOngForm = () => setCurrentScreen("registerOng");
@@ -41,53 +36,56 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
-      <div className="App min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
-        {!isAuthenticated ? (
-          <>
-            {currentScreen === "login" && (
-              <LoginScreen
-                onSwitchToRegister={handleSwitchToTipoCadastro}
-                onLoginSuccess={handleLoginSuccess}
-              />
-            )}
-            {currentScreen === "tipoCadastro" && (
-              <TipoCadastro
-                onSelectAdotante={handleSwitchToAdotanteForm}
-                onSelectOng={handleSwitchToOngForm}
-                onBack={handleSwitchToLogin} // Adicione esta linha
+      <div className="flex min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
+        <SidebarMenu
+          onNavigate={handleNavigation}
+          user={user}
+        />
+
+        <main className="pt-20 w-full p-6">
+          {!isAuthenticated && currentScreen === "login" && (
+            <LoginScreen
+              onSwitchToRegister={handleSwitchToTipoCadastro}
+              onLoginSuccess={handleLoginSuccess}
             />
-            )}
-            {currentScreen === "registerAdotante" && (
-              <AdotanteForm onSwitchToLogin={handleSwitchToLogin} />
-            )}
-            {currentScreen === "registerOng" && (
-              <MeuForm onSwitchToLogin={handleSwitchToLogin} />
-            )}
-          </>
-        ) : (
-          <div className="flex min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
-            {/* CORREÇÃO: Passando a propriedade userName para o SidebarMenu */}
-            <SidebarMenu onNavigate={handleNavigation} userName={user?.nomeOng || user?.nomeAdotante} />
-            <main className="ml-64 p-6 w-full">
-              {currentScreen === "inicio" && (
-                <div>
-                  <h1 className="text-4xl font-bold mb-2">
-                    Bem-vindo(a) {user?.nomeOng || user?.nomeAdotante}
-                  </h1>
-                  <p className="text-gray-600 mb-6">
-                    Escolha uma ONG para ver os animais disponíveis para adoção
-                  </p>
-                </div>
-              )}
-              {currentScreen === "adotar" && (
-                <h1 className="text-4xl font-bold">Página de Adoção</h1>
-              )}
-              {currentScreen === "novidades" && (
-                <h1 className="text-4xl font-bold">Novidades do PetMatch</h1>
-              )}
-            </main>
-          </div>
-        )}
+          )}
+
+          {!isAuthenticated && currentScreen === "tipoCadastro" && (
+            <TipoCadastro
+              onSelectAdotante={handleSwitchToAdotanteForm}
+              onSelectOng={handleSwitchToOngForm}
+              onBack={handleSwitchToLogin}
+            />
+          )}
+
+          {!isAuthenticated && currentScreen === "registerAdotante" && (
+            <AdotanteForm onBackToLogin={handleSwitchToLogin} onCadastroSuccess={handleLoginSuccess} />
+          )}
+
+          {!isAuthenticated && currentScreen === "registerOng" && (
+            <MeuForm onBackToLogin={handleSwitchToLogin} onCadastroSuccess={handleLoginSuccess} />
+          )}
+
+          {currentScreen === "inicio" && (
+            <div>
+              <h1 className="text-4xl font-bold mb-2">
+                {/* CORREÇÃO: Verifica nomeOng OU nome_adotante */}
+                Bem-vindo(a) {user?.nomeOng || user?.nome_adotante || "ao PetMatch"}
+              </h1>
+              <p className="text-gray-600 mb-6">
+                Escolha uma ONG para ver os animais disponíveis para adoção
+              </p>
+            </div>
+          )}
+
+          {currentScreen === "adotar" && (
+            <h1 className="text-4xl font-bold">Página de Adoção</h1>
+          )}
+
+          {currentScreen === "novidades" && (
+            <h1 className="text-4xl font-bold">Novidades do PetMatch</h1>
+          )}
+        </main>
       </div>
     </GoogleOAuthProvider>
   );

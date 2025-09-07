@@ -3,24 +3,28 @@ body, html, #root {
   height: 100%;
   margin: 0;
   font-family: Arial, sans-serif;
+  
+  /* ESTILOS DO FUNDO APLICADOS DIRETAMENTE NO CORPO DA PÁGINA */
+  background-image: url("./images/Auth.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* Container centralizado com imagem de fundo */
+/* Container centralizado sem o fundo duplicado */
 .centerContainer, .container {
   display: flex;
   flex-direction: column;
-  justify-content: center;  
-  align-items: center;      
-  height: 100vh;            
-  background-image: url("../src/images/Auth.png");
-  background-size: cover;      
-  background-position: center;
-  background-repeat: no-repeat;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   padding: 20px;
   box-sizing: border-box;
   color: #333;
+  /* Garante que não haja fundo aqui para não sobrepor */
+  background: none;
 }
-  
+ 
 /* Logo e título */
 .logo-container {
   display: flex;

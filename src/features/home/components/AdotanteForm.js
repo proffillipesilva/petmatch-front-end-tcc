@@ -3,11 +3,9 @@ import React, { useState } from "react";
 import api from "../../../shared/utils/api";
 import { cpf } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
 import Frame1 from "../../../images/Frame1.png";
-import AuthImg from "../../../images/Auth.png";
 
-const AdotanteForm = ({ onSwitchToLogin }) => {
+const AdotanteForm = ({ onBackToLogin, onCadastroSuccess }) => {
   const [form, setForm] = useState({
     nomeAdotante: "",
     cpfAdotante: "",
@@ -34,13 +32,15 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
 
   const enviaServidor = async (e) => {
     e.preventDefault();
-    let tempErrors = {};
+    const tempErrors = {};
 
+    // Validações
     if (!form.nomeAdotante) tempErrors.nomeAdotante = "O nome é obrigatório!";
     if (!form.cpfAdotante) tempErrors.cpfAdotante = "O CPF é obrigatório!";
     else if (!cpf.isValid(form.cpfAdotante)) tempErrors.cpfAdotante = "CPF inválido!";
     if (!form.emailAdotante) tempErrors.emailAdotante = "O e-mail é obrigatório!";
-    else if (!/^[^\s@]+@[^\s@]+\.com$/.test(form.emailAdotante)) tempErrors.emailAdotante = "Digite um e-mail válido que termine com '.com'";
+    else if (!/^[^\s@]+@[^\s@]+\.com$/.test(form.emailAdotante))
+      tempErrors.emailAdotante = "Digite um e-mail válido que termine com '.com'";
     if (!form.celularAdotante) tempErrors.celularAdotante = "O celular é obrigatório!";
     if (!form.enderecoAdotante) tempErrors.enderecoAdotante = "O endereço é obrigatório!";
     if (!form.descricaoOutrosAnimais) tempErrors.descricaoOutrosAnimais = "A descrição é obrigatória!";
@@ -55,23 +55,32 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
       return;
     }
 
+    setLoading(true);
+
+    const payload = {
+      nomeAdotante: form.nomeAdotante,
+      cpfAdotante: form.cpfAdotante,
+      enderecoAdotante: form.enderecoAdotante,
+      celularAdotante: form.celularAdotante,
+      emailAdotante: form.emailAdotante,
+      descricaoOutrosAnimais: form.descricaoOutrosAnimais,
+      preferencia: form.preferencia,
+      senha: form.senha,
+    };
+
     try {
-      setLoading(true);
-      await api.post("/adotantes", {
-        nomeAdotante: form.nomeAdotante,
-        cpfAdotante: form.cpfAdotante,
-        enderecoAdotante: form.enderecoAdotante,
-        celularAdotante: form.celularAdotante,
-        emailAdotante: form.emailAdotante,
-        descricaoOutrosAnimais: form.descricaoOutrosAnimais,
-        preferencia: form.preferencia,
-        senha: form.senha,
-      });
-      alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      onSwitchToLogin();
+      const response = await api.post("/adotantes", payload);
+      // LINHA DE DIAGNÓSTICO
+      console.log("RESPOSTA COMPLETA DA API:", response.data); 
+      onCadastroSuccess(response.data); // <-- atualiza user e vai para "inicio"
     } catch (err) {
-      console.error(err);
-      alert("Erro ao cadastrar. Tente novamente.");
+      console.error("Erro ao cadastrar:", err);
+      if (err.response) {
+        if (err.response.status === 409) alert("CPF ou email já cadastrado!");
+        else alert(`Erro: ${err.response.data.message || "Tente novamente."}`);
+      } else {
+        alert("Erro ao cadastrar. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
@@ -94,7 +103,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 bg-auth-pattern bg-cover bg-center bg-no-repeat text-[#333]">
+    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
@@ -124,11 +133,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
               placeholder="Crie uma senha"
               className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.senha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            <button
-              type="button"
-              onClick={() => setShowSenha(!showSenha)}
-              className="absolute right-3 top-9 text-gray-500"
-            >
+            <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-9 text-gray-500">
               {showSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {errors.senha && <p className="text-red-600 text-xs mt-1">{errors.senha}</p>}
@@ -146,11 +151,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
               placeholder="Repita a senha"
               className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.confirmSenha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirmSenha(!showConfirmSenha)}
-              className="absolute right-3 top-9 text-gray-500"
-            >
+            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-3 top-9 text-gray-500">
               {showConfirmSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {errors.confirmSenha && <p className="text-red-600 text-xs mt-1">{errors.confirmSenha}</p>}
@@ -168,14 +169,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
             />
             <label htmlFor="termos" className="text-sm text-black">
               Li e aceito os{" "}
-              <a
-                href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-blue-600 hover:text-blue-800"
-              >
-                termos de uso
-              </a>
+              <a href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">termos de uso</a>
             </label>
           </div>
           {errors.termos && <p className="text-red-600 text-xs mt-1">{errors.termos}</p>}
@@ -190,13 +184,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
 
           <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }}
-              className="underline text-black hover:text-gray-700"
-            >
-              Faça login
-            </a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin(); }} className="underline text-black hover:text-gray-700">Faça login</a>
           </p>
         </form>
       </div>

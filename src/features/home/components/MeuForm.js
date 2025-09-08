@@ -5,7 +5,7 @@ import { cnpj } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Frame1 from "../../../images/Frame1.png";
 
-const MeuForm = ({ onSwitchToLogin }) => {
+const MeuForm = ({ onBackToLogin }) => {
   const [form, setForm] = useState({
     nomeOng: "",
     nomeFantasiaOng: "",
@@ -72,7 +72,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
         senha: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      onSwitchToLogin();
+      onBackToLogin();
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -187,7 +187,7 @@ const MeuForm = ({ onSwitchToLogin }) => {
 
           <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
-            <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }} className="underline text-black hover:text-gray-700">
+            <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin(); }} className="underline text-black hover:text-gray-700">
               Faça login
             </a>
           </p>

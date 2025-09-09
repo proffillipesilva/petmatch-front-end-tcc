@@ -1,9 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaHome, FaPaw, FaStar, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 
 const SidebarMenu = ({ onNavigate, userName }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const welcomeMessage = userName ? `Olá, ${userName}` : "Bem-vindo(a)";
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false); // fecha o menu
+      }
+    }
+
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
 
   return (
     <header className="w-full bg-white shadow-md fixed top-0 left-0 z-20">
@@ -41,7 +60,7 @@ const SidebarMenu = ({ onNavigate, userName }) => {
         </nav>
 
         {/* Usuário */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2 text-gray-700 hover:text-yellow-500"

@@ -5,7 +5,7 @@ import { cpf } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Frame1 from "../../../images/Frame1.png";
 
-const AdotanteForm = ({ onSwitchToLogin }) => {
+const AdotanteForm = ({ onBackToLogin }) => {
   const [form, setForm] = useState({
     nomeAdotante: "",
     cpfAdotante: "",
@@ -66,7 +66,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
         senha: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      onSwitchToLogin();
+      onBackToLogin();
     } catch (err) {
       console.error("Erro ao cadastrar:", err);
       if (err.response) {
@@ -180,7 +180,7 @@ const AdotanteForm = ({ onSwitchToLogin }) => {
 
           <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
-            <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToLogin(); }} className="underline text-black hover:text-gray-700">
+            <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin(); }} className="underline text-black hover:text-gray-700">
               Faça login
             </a>
           </p>

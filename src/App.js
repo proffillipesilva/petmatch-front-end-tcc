@@ -1,10 +1,8 @@
-// src/App.jsx
 import React, { useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-// ✅ Ajustado os imports de acordo com sua estrutura
-import Navbar from "./shared/components/Navbar"; // substitui SidebarMenu
-import LoginScreen from "./features/splash/components/LoginScreen";
+import Navbar from "./shared/components/Navbar";
+import SplashScreen from "./features/splash/SplashScreen"; // O CAMINHO FOI CORRIGIDO
 import TipoCadastro from "./features/splash/components/TipoCadastro";
 import MeuForm from "./features/splash/components/MeuForm";
 import AdotanteForm from "./features/splash/components/AdotanteForm";
@@ -15,10 +13,9 @@ import "./index.css";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState("inicio");
+  const [currentScreen, setCurrentScreen] = useState("login");
   const [user, setUser] = useState(null);
 
-  // ====== Handlers de Navegação ======
   const handleNavigation = (screen) => {
     if (screen === "sair") {
       setIsAuthenticated(false);
@@ -40,13 +37,12 @@ function App() {
   const handleSwitchToOngForm = () => setCurrentScreen("registerOng");
   const handleSwitchToLogin = () => setCurrentScreen("login");
 
-  // ====== Mapeamento de telas ======
   const renderScreen = () => {
     if (!isAuthenticated) {
       switch (currentScreen) {
         case "login":
           return (
-            <LoginScreen
+            <SplashScreen
               onSwitchToRegister={handleSwitchToTipoCadastro}
               onLoginSuccess={handleLoginSuccess}
             />
@@ -65,7 +61,7 @@ function App() {
           return <MeuForm onBackToLogin={handleSwitchToLogin} />;
         default:
           return (
-            <LoginScreen
+            <SplashScreen
               onSwitchToRegister={handleSwitchToTipoCadastro}
               onLoginSuccess={handleLoginSuccess}
             />
@@ -93,14 +89,12 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
-      <div className="flex min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
-        {/* ✅ Navbar no lugar do SidebarMenu */}
+      <div className="flex min-h-screen">
         <Navbar
           onNavigate={handleNavigation}
           userName={user?.nomeOng || user?.nomeAdotante}
           userType={user?.tipo}
         />
-
         <main className="pt-20 w-full p-6">{renderScreen()}</main>
       </div>
     </GoogleOAuthProvider>

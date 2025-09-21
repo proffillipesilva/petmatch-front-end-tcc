@@ -2,7 +2,9 @@
 import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
 
-import Frame1 from "../../../images/Frame1.png";
+import Frame1 from "../assets/Frame1.png";
+import AuthImg from "../assets/Auth.png";
+
 
 const TipoCadastro = ({ onSelectAdotante, onSelectOng, onBack }) => {
   return (

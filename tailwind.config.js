@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
@@ -22,7 +21,7 @@ module.exports = {
         'slide-in-left': 'slideInLeft 0.5s ease-out forwards',
       },
       backgroundImage: {
-        'auth-pattern': "url('./images/Auth.png')",
+        'auth-pattern': "url('/src/features/splash/assets/Auth.png')",
       },
       boxShadow: {
         'white-glow': '0 0 10px rgba(255, 255, 255, 0.5)',

@@ -1,31 +1,17 @@
 // src/App.jsx
 import React, { useState } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import SidebarMenu from "./features/home/SidebarMenu";
-import LoginScreen from "./features/home/components/LoginScreen";
-import TipoCadastro from "./features/home/components/TipoCadastro";
-import MeuForm from "./features/home/components/MeuForm";
-import AdotanteForm from "./features/home/components/AdotanteForm";
+
+// ✅ Ajustado os imports de acordo com sua estrutura
+import Navbar from "./shared/components/Navbar"; // substitui SidebarMenu
+import LoginScreen from "./features/splash/components/LoginScreen";
+import TipoCadastro from "./features/splash/components/TipoCadastro";
+import MeuForm from "./features/splash/components/MeuForm";
+import AdotanteForm from "./features/splash/components/AdotanteForm";
+import OngHome from "./features/home/OngHome";
+import AdotanteHome from "./features/home/AdotanteHome";
+
 import "./index.css";
-
-// Homes separadas
-const OngHome = ({ user }) => (
-  <div>
-    <h1 className="text-4xl font-bold mb-2">Bem-vindo, {user?.nomeOng}</h1>
-    <p className="text-gray-600 mb-6">
-      Painel da ONG — gerencie seus animais e cadastros.
-    </p>
-  </div>
-);
-
-const AdotanteHome = ({ user }) => (
-  <div>
-    <h1 className="text-4xl font-bold mb-2">Bem-vindo, {user?.nomeAdotante}</h1>
-    <p className="text-gray-600 mb-6">
-      Explore ONGs e encontre animais para adoção!
-    </p>
-  </div>
-);
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -37,7 +23,7 @@ function App() {
     if (screen === "sair") {
       setIsAuthenticated(false);
       setUser(null);
-      setCurrentScreen("login"); // Mudar para login ao sair
+      setCurrentScreen("login");
     } else {
       setCurrentScreen(screen);
     }
@@ -46,8 +32,6 @@ function App() {
   const handleLoginSuccess = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
-
-    // Redirecionar para a home correta
     setCurrentScreen(userData.tipo === "ong" ? "ongHome" : "adotanteHome");
   };
 
@@ -56,7 +40,7 @@ function App() {
   const handleSwitchToOngForm = () => setCurrentScreen("registerOng");
   const handleSwitchToLogin = () => setCurrentScreen("login");
 
-  // ====== Mapeamento de telas para renderização ======
+  // ====== Mapeamento de telas ======
   const renderScreen = () => {
     if (!isAuthenticated) {
       switch (currentScreen) {
@@ -80,7 +64,12 @@ function App() {
         case "registerOng":
           return <MeuForm onBackToLogin={handleSwitchToLogin} />;
         default:
-          return <LoginScreen onSwitchToRegister={handleSwitchToTipoCadastro} onLoginSuccess={handleLoginSuccess} />;
+          return (
+            <LoginScreen
+              onSwitchToRegister={handleSwitchToTipoCadastro}
+              onLoginSuccess={handleLoginSuccess}
+            />
+          );
       }
     } else {
       switch (currentScreen) {
@@ -93,7 +82,11 @@ function App() {
         case "novidades":
           return <h1 className="text-4xl font-bold">Novidades do PetMatch</h1>;
         default:
-          return user.tipo === "ong" ? <OngHome user={user} /> : <AdotanteHome user={user} />;
+          return user.tipo === "ong" ? (
+            <OngHome user={user} />
+          ) : (
+            <AdotanteHome user={user} />
+          );
       }
     }
   };
@@ -101,7 +94,8 @@ function App() {
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
       <div className="flex min-h-screen bg-auth-pattern bg-cover bg-center bg-no-repeat">
-        <SidebarMenu
+        {/* ✅ Navbar no lugar do SidebarMenu */}
+        <Navbar
           onNavigate={handleNavigation}
           userName={user?.nomeOng || user?.nomeAdotante}
           userType={user?.tipo}

@@ -5,8 +5,9 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import api from "../../../shared/utils/api";
 
-import Frame1 from "../../../images/Frame1.png";
-import AuthImg from "../../../images/Auth.png"; // Caso queira usar depois
+import Frame1 from "../assets/Frame1.png";
+import AuthImg from "../assets/Auth.png";
+
 
 const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [form, setForm] = useState({ email: "", password: "" });

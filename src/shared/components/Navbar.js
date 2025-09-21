@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaHome, FaPaw, FaStar, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
 
-const SidebarMenu = ({ onNavigate, userName }) => {
+const Navbar = ({ onNavigate, userName }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const welcomeMessage = userName ? `Olá, ${userName}` : "Bem-vindo(a)";
@@ -103,4 +103,4 @@ const SidebarMenu = ({ onNavigate, userName }) => {
   );
 };
 
-export default SidebarMenu;
+export default Navbar;

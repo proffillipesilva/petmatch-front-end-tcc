@@ -1,13 +1,17 @@
-// src/MeuForm.jsx
 import React, { useState } from "react";
 import api from "../../../shared/utils/api";
 import { cnpj } from "cpf-cnpj-validator";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa"; // Importa FaArrowLeft
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+
 import Frame1 from "../assets/Frame1.png";
-import AuthImg from "../assets/Auth.png";
+// Removido: import AuthImg from "../assets/Auth.png"; (não é usado neste componente)
 
 
-const MeuForm = ({ onBackToLogin }) => {
+// Remove a prop onBackToLogin, pois agora usaremos useNavigate
+const MeuForm = () => {
+  const navigate = useNavigate(); // Hook para navegação
+
   const [form, setForm] = useState({
     nomeOng: "",
     nomeFantasiaOng: "",
@@ -31,6 +35,10 @@ const MeuForm = ({ onBackToLogin }) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleBack = () => {
+    navigate(-1); // Volta para a página anterior
   };
 
   const enviaServidor = async (e) => {
@@ -62,7 +70,7 @@ const MeuForm = ({ onBackToLogin }) => {
 
     try {
       setLoading(true);
-      await api.post("/users", {
+      await api.post("/users", { // Confirme se o endpoint é "/ongs" ou "/users" para cadastro de ONG
         nomeOng: form.nomeOng,
         nomeFantasiaOng: form.nomeFantasiaOng,
         razaoSocialOng: form.razaoSocialOng,
@@ -74,7 +82,7 @@ const MeuForm = ({ onBackToLogin }) => {
         senha: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      onBackToLogin();
+      navigate('/login'); // Redireciona para a tela de login
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -107,6 +115,15 @@ const MeuForm = ({ onBackToLogin }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
+        {/* Botão Voltar */}
+        <button
+          onClick={handleBack}
+          className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          <FaArrowLeft size={20} />
+          <span className="text-lg font-medium">Voltar</span>
+        </button>
+
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
@@ -115,7 +132,7 @@ const MeuForm = ({ onBackToLogin }) => {
         </div>
 
         <form onSubmit={enviaServidor} className="w-full">
-          {renderInput("nomeOng", "Nome")}
+          {renderInput("nomeOng", "Nome da ONG")}
           {renderInput("nomeFantasiaOng", "Nome Fantasia")}
           {renderInput("razaoSocialOng", "Razão Social")}
           {renderInput("contatoOng", "Contato da ONG")}
@@ -189,7 +206,7 @@ const MeuForm = ({ onBackToLogin }) => {
 
           <p className="mt-6 text-lg text-gray-500 text-center">
             Já tem uma conta?{" "}
-            <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin(); }} className="underline text-black hover:text-gray-700">
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }} className="underline text-black hover:text-gray-700">
               Faça login
             </a>
           </p>

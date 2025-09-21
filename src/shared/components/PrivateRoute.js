@@ -1,18 +1,23 @@
-import React from 'react'
-import { Navigate } from 'react-router-dom';
-import useAuthStore from '../store/auth-store';
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Navbar from './Navbar';
 
-const PrivateRoute = ({children}) => {
-  //const {isAuthenticated } = useAuth();
-  const {user} = useAuthStore();
-  return (
-
-    user != null ? children : <Navigate to={"/login"} replace />
+const PrivateRoute = () => {
+  const { isAuthenticated } = useAuth();
   
-  )
-}
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return (
+    <>
+      <Navbar />
+      <div className="flex min-h-screen pt-20">
+        <Outlet />
+      </div>
+    </>
+  );
+};
 
-export default PrivateRoute
-
-
-TEM Q FAZER AINDA
+export default PrivateRoute;

@@ -1,19 +1,22 @@
-// src/LoginScreen.jsx
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
-import api from "../../../shared/utils/api";
-
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../shared/context/AuthContext';
+import LoginService from '../services/LoginService';
 import Frame1 from "../assets/Frame1.png";
 
-const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
+const LoginScreen = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState("adotante");
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -25,11 +28,12 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           }
         );
         const userInfo = await res.json();
-        onLoginSuccess({
+        login({
           nomeOng: userInfo.name,
           emailOng: userInfo.email,
           googleId: userInfo.sub,
           picture: userInfo.picture,
+          tipo: 'ong'
         });
       } catch (error) {
         console.error("Erro ao pegar dados do Google:", error);
@@ -57,20 +61,15 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
 
     try {
       setLoading(true);
-      const payload =
-        loginType === "adotante"
-          ? { emailAdotante: form.email, senha: form.password }
-          : { emailOng: form.email, senha: form.password };
-
-      const endpoint =
-        loginType === "adotante" ? "/adotantes/login" : "/users/login";
-
-      const response = await api.post(endpoint, payload);
-      console.log("Login bem-sucedido:", response.data);
-      onLoginSuccess(response.data);
+      const payload = {
+        email: form.email,
+        password: form.password
+      };
+      const userData = await LoginService.login(payload, loginType);
+      login(userData);
     } catch (err) {
-      console.error("Erro ao logar:", err);
-      alert("E-mail ou senha inválidos!");
+      console.error("Erro ao logar:", err.message);
+      alert(err.message);
     } finally {
       setLoading(false);
     }
@@ -182,7 +181,7 @@ const LoginScreen = ({ onSwitchToRegister, onLoginSuccess }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            onSwitchToRegister();
+            navigate('/tipo-cadastro');
           }}
           className="underline text-black hover:text-gray-700"
         >

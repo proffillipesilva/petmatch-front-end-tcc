@@ -1,18 +1,30 @@
-// src/TipoCadastro.jsx
 import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 import Frame1 from "../assets/Frame1.png";
-import AuthImg from "../assets/Auth.png";
 
+const TipoCadastro = () => {
+  const navigate = useNavigate();
 
-const TipoCadastro = ({ onSelectAdotante, onSelectOng, onBack }) => {
+  const handleSelectAdotante = () => {
+    navigate('/adotante-form');
+  };
+
+  const handleSelectOng = () => {
+    navigate('/ong-form');
+  };
+
+  const handleBack = () => {
+    navigate(-1); // Voltar para a página anterior
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333] relative">
       
       {/* Botão Voltar */}
       <button
-        onClick={onBack}
+        onClick={handleBack}
         className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors"
       >
         <FaArrowLeft size={20} />
@@ -34,14 +46,14 @@ const TipoCadastro = ({ onSelectAdotante, onSelectOng, onBack }) => {
         {/* Botões de seleção */}
         <div className="flex flex-col gap-4">
           <button
-            onClick={onSelectAdotante}
+            onClick={handleSelectAdotante}
             className="w-full py-3 rounded-2xl bg-black text-white font-semibold hover:bg-gray-800 transition-colors"
           >
             Adotante
           </button>
 
           <button
-            onClick={onSelectOng}
+            onClick={handleSelectOng}
             className="w-full py-3 rounded-2xl bg-black text-white font-semibold hover:bg-gray-800 transition-colors"
           >
             ONG

@@ -1,23 +1,13 @@
-// src/features/home/components/AdotanteHome.jsx
-import React from "react";
+import React from 'react';
 
-const AdotanteHome = ({ user }) => {
-  return (
-    <div className="p-6">
-      <h1 className="text-4xl font-bold mb-2">Bem-vindo, {user?.nomeAdotante}</h1>
-      <p className="text-gray-600 mb-6">
-        Explore ONGs e encontre animais para adoção!
-      </p>
-      <div className="mt-4">
-        <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-          Procurar Animais
-        </button>
-        <button className="bg-pink-600 text-white px-4 py-2 rounded-lg ml-4 hover:bg-pink-700">
-          Meus Favoritos
-        </button>
-      </div>
-    </div>
-  );
+const AdotanteHome = () => {
+    return (
+        <div className="container mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
+            <h1 className="text-3xl font-bold mb-4">Bem-vindo(a), Adotante!</h1>
+            <p className="text-gray-700">Encontre animais para adoção e gerencie seus favoritos.</p>
+            {/* Adicione os cards e o conteúdo de adoção aqui */}
+        </div>
+    );
 };
 
 export default AdotanteHome;

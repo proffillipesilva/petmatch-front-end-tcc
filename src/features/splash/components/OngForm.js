@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import api from "../../../shared/utils/api";
 import { cnpj } from "cpf-cnpj-validator";
-import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa"; // Importa FaArrowLeft
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Frame1 from "../assets/Frame1.png";
+import AuthImg from "../assets/Auth.png";
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
-import Frame1 from "../assets/Frame1.png";
-// Removido: import AuthImg from "../assets/Auth.png"; (não é usado neste componente)
-
-
-// Remove a prop onBackToLogin, pois agora usaremos useNavigate
-const MeuForm = () => {
+const OngForm = ({ onBackToLogin }) => {
   const navigate = useNavigate(); // Hook para navegação
 
   const [form, setForm] = useState({
@@ -70,7 +67,7 @@ const MeuForm = () => {
 
     try {
       setLoading(true);
-      await api.post("/users", { // Confirme se o endpoint é "/ongs" ou "/users" para cadastro de ONG
+      await api.post("/users", {
         nomeOng: form.nomeOng,
         nomeFantasiaOng: form.nomeFantasiaOng,
         razaoSocialOng: form.razaoSocialOng,
@@ -106,7 +103,8 @@ const MeuForm = () => {
         value={form[id]}
         onChange={handleForm}
         placeholder={`Digite ${label.toLowerCase()}`}
-        className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${errors[id] ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+        // Ajustado py- para 'py-3.5' para maior altura e text-base para texto maior
+        className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${errors[id] ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
       />
       {errors[id] && <p className="text-red-600 text-xs mt-1">{errors[id]}</p>}
     </div>
@@ -114,16 +112,10 @@ const MeuForm = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
-      <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
-        {/* Botão Voltar */}
-        <button
-          onClick={handleBack}
-          className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <FaArrowLeft size={20} />
-          <span className="text-lg font-medium">Voltar</span>
-        </button>
-
+      {/* Alterado max-w para permitir que o formulário seja mais largo */}
+      {/* sm:max-w-[500px] e xl:max-w-[600px] aumentam a largura em diferentes tamanhos de tela */}
+      
+      <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[280px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
@@ -132,7 +124,7 @@ const MeuForm = () => {
         </div>
 
         <form onSubmit={enviaServidor} className="w-full">
-          {renderInput("nomeOng", "Nome da ONG")}
+          {renderInput("nomeOng", "Nome")}
           {renderInput("nomeFantasiaOng", "Nome Fantasia")}
           {renderInput("razaoSocialOng", "Razão Social")}
           {renderInput("contatoOng", "Contato da ONG")}
@@ -151,9 +143,11 @@ const MeuForm = () => {
               value={form.senha}
               onChange={handleForm}
               placeholder="Crie uma senha"
-              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.senha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+              // Ajustado py- para 'py-3.5' e text-base
+              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.senha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-9 text-gray-500">
+            {/* Ícone de olho ajustado para centralização vertical */}
+            <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {errors.senha && <p className="text-red-600 text-xs mt-1">{errors.senha}</p>}
@@ -169,25 +163,27 @@ const MeuForm = () => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.confirmSenha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
+              // Ajustado py- para 'py-3.5' e text-base
+              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.confirmSenha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-3 top-9 text-gray-500">
+            {/* Ícone de olho ajustado para centralização vertical */}
+            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showConfirmSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
             {errors.confirmSenha && <p className="text-red-600 text-xs mt-1">{errors.confirmSenha}</p>}
           </div>
 
           {/* Termos */}
-          <div className="mb-3.5 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2">
             <input
               id="termos"
               name="termos"
               type="checkbox"
               checked={form.termos}
               onChange={handleForm}
-              className="w-4 h-4 border-gray-400 rounded"
+              className="w-6 h-6 border-gray-400 rounded"
             />
-            <label htmlFor="termos" className="text-sm text-black">
+            <label htmlFor="termos" className="text-base text-black">
               Li e aceito os{" "}
               <a href="https://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 hover:text-blue-800">
                 termos de uso
@@ -216,4 +212,4 @@ const MeuForm = () => {
   );
 };
 
-export default MeuForm;
+export default OngForm;

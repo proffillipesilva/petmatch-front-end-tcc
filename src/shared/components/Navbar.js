@@ -39,10 +39,10 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+        <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 h-20 flex items-center justify-between px-6">
             <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
                 <div onClick={() => handleNavigate("/")} className="cursor-pointer">
-                    <img src={Logo} alt="Logo PetMatch" className="max-w-[120px]" />
+                    <img src={Logo} alt="Logo PetMatch" className="h-14 max-w-[120px]" />
                 </div>
                 <div className="flex items-center space-x-6">
                     <ul className="flex items-center space-x-4">

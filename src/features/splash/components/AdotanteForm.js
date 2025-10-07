@@ -64,7 +64,7 @@ const AdotanteForm = () => {
 
     try {
       setLoading(true);
-      await api.post("/adotante", {
+      await api.post("/v1/api/usuarios/adotante", {
         nomeAdotante: form.nomeAdotante,
         cpfAdotante: form.cpfAdotante,
         enderecoAdotante: form.enderecoAdotante,

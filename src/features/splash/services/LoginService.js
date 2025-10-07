@@ -11,8 +11,8 @@ const LoginService = {
     try {
       const payload =
         loginType === "adotante"
-          ? { emailAdotante: loginData.email, senha: loginData.password }
-          : { emailOng: loginData.email, senha: loginData.password };
+          ? { email: loginData.email, password: loginData.password }
+          : { email: loginData.email, password: loginData.password };
 
       const endpoint = "/v1/api/auth/login";
 

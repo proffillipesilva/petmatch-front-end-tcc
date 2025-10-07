@@ -11,11 +11,10 @@ const LoginService = {
     try {
       const payload =
         loginType === "adotante"
-          ? { emailAdotante: loginData.email, senha: loginData.password }
-          : { emailOng: loginData.email, senha: loginData.password };
+          ? { email: loginData.email, password: loginData.password }
+          : { email: loginData.email, password: loginData.password };
 
-      const endpoint =
-        loginType === "adotante" ? "/adotantes/login" : "/users/login";
+      const endpoint = "/v1/api/auth/login";
 
       const response = await api.post(endpoint, payload);
       return response.data;

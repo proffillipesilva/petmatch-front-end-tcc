@@ -14,7 +14,7 @@ const LoginService = {
           ? { emailAdotante: loginData.email, senha: loginData.password }
           : { emailOng: loginData.email, senha: loginData.password };
 
-      const endpoint =
+      const endpoint = "/v1/api/usuarios" + 
         loginType === "adotante" ? "/adotantes/login" : "/users/login";
 
       const response = await api.post(endpoint, payload);

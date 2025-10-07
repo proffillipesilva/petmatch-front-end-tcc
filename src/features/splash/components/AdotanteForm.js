@@ -65,14 +65,14 @@ const AdotanteForm = () => {
     try {
       setLoading(true);
       await api.post("/v1/api/usuarios/adotante", {
-        nomeAdotante: form.nomeAdotante,
-        cpfAdotante: form.cpfAdotante,
-        enderecoAdotante: form.enderecoAdotante,
-        celularAdotante: form.celularAdotante,
-        emailAdotante: form.emailAdotante,
+        name: form.nomeAdotante,
+        cpf: form.cpfAdotante,
+        endereco: form.enderecoAdotante,
+        celular: form.celularAdotante,
+        email: form.emailAdotante,
         descricaoOutrosAnimais: form.descricaoOutrosAnimais,
         preferencia: form.preferencia,
-        senha: form.senha,
+        password: form.senha,
       });
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
       navigate('/login'); // Redireciona para a tela de login

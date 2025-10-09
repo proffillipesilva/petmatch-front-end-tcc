@@ -37,7 +37,9 @@ const LoginService = {
   async register(registerData, registerType) {
     try {
       const endpoint =
-        registerType === "adotante" ? "/adotantes/register" : "/ongs/register";
+        registerType === "adotante"
+          ? "/v1/api/usuarios/adotante"
+          : "/v1/api/usuarios/ong";
 
       const response = await api.post(endpoint, registerData);
       return response.data;

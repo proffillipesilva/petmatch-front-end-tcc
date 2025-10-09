@@ -67,7 +67,8 @@ const OngForm = ({ onBackToLogin }) => {
 
     try {
       setLoading(true);
-      await api.post("/users", {
+      // ROTA CORRIGIDA para bater com o back-end
+      await api.post("/v1/api/usuarios/ong", {
         nomeOng: form.nomeOng,
         nomeFantasiaOng: form.nomeFantasiaOng,
         razaoSocialOng: form.razaoSocialOng,
@@ -103,7 +104,6 @@ const OngForm = ({ onBackToLogin }) => {
         value={form[id]}
         onChange={handleForm}
         placeholder={`Digite ${label.toLowerCase()}`}
-        // Ajustado py- para 'py-3.5' para maior altura e text-base para texto maior
         className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${errors[id] ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
       />
       {errors[id] && <p className="text-red-600 text-xs mt-1">{errors[id]}</p>}
@@ -112,9 +112,6 @@ const OngForm = ({ onBackToLogin }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
-      {/* Alterado max-w para permitir que o formulário seja mais largo */}
-      {/* sm:max-w-[500px] e xl:max-w-[600px] aumentam a largura em diferentes tamanhos de tela */}
-      
       <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[280px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
@@ -143,10 +140,8 @@ const OngForm = ({ onBackToLogin }) => {
               value={form.senha}
               onChange={handleForm}
               placeholder="Crie uma senha"
-              // Ajustado py- para 'py-3.5' e text-base
               className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.senha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            {/* Ícone de olho ajustado para centralização vertical */}
             <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
@@ -163,10 +158,8 @@ const OngForm = ({ onBackToLogin }) => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              // Ajustado py- para 'py-3.5' e text-base
               className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.confirmSenha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            {/* Ícone de olho ajustado para centralização vertical */}
             <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showConfirmSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>

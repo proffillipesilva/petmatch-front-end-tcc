@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import api from "../../../shared/utils/api";
+// Removida a importação direta de 'api'
 import { cpf } from "cpf-cnpj-validator";
-import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa"; // Importa FaArrowLeft
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom'; 
+import AdotanteService from '../services/AdotanteService'; // ✨ IMPORTAÇÃO DO NOVO SERVICE
 
 import Frame1 from "../assets/Frame1.png";
-// Removido: import AuthImg from "../assets/Auth.png"; (não é usado neste componente)
 
-// Remove a prop onBackToLogin, pois agora usaremos useNavigate
 const AdotanteForm = () => {
-  const navigate = useNavigate(); // Hook para navegação
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     nomeAdotante: "",
@@ -43,6 +42,7 @@ const AdotanteForm = () => {
     e.preventDefault();
     const tempErrors = {};
 
+    // --- Lógica de Validação de Erros (mantida) ---
     if (!form.nomeAdotante) tempErrors.nomeAdotante = "O nome é obrigatório!";
     if (!form.cpfAdotante) tempErrors.cpfAdotante = "O CPF é obrigatório!";
     else if (!cpf.isValid(form.cpfAdotante)) tempErrors.cpfAdotante = "CPF inválido!";
@@ -56,6 +56,7 @@ const AdotanteForm = () => {
     if (!form.confirmSenha) tempErrors.confirmSenha = "A confirmação da senha é obrigatória!";
     else if (form.senha !== form.confirmSenha) tempErrors.confirmSenha = "As senhas não coincidem!";
     if (!form.termos) tempErrors.termos = "Você deve aceitar os termos de uso!";
+    // ------------------------------------------------
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
@@ -64,7 +65,9 @@ const AdotanteForm = () => {
 
     try {
       setLoading(true);
-      await api.post("/v1/api/usuarios/adotante", {
+
+      // Prepara o payload para o serviço, garantindo que os campos de senha correspondam ao backend
+      const payload = {
         nomeAdotante: form.nomeAdotante,
         cpfAdotante: form.cpfAdotante,
         enderecoAdotante: form.enderecoAdotante,
@@ -72,18 +75,18 @@ const AdotanteForm = () => {
         emailAdotante: form.emailAdotante,
         descricaoOutrosAnimais: form.descricaoOutrosAnimais,
         preferencia: form.preferencia,
-        senha: form.senha,
-      });
+        senha: form.senha, // Enviamos a senha (não a confirmSenha)
+      };
+
+      // ✨ USO DO SERVICE: Substitui o 'await api.post(...)'
+      await AdotanteService.registerAdotante(payload); 
+      
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
       navigate('/login'); // Redireciona para a tela de login
     } catch (err) {
       console.error("Erro ao cadastrar:", err);
-      if (err.response) {
-        if (err.response.status === 409) alert("CPF ou email já cadastrado!");
-        else alert(`Erro: ${err.response.data.message || "Tente novamente."}`);
-      } else {
-        alert("Erro ao cadastrar. Tente novamente.");
-      }
+      // O AdotanteService já formatou a mensagem de erro antes de lançar
+      alert(err.message); 
     } finally {
       setLoading(false);
     }
@@ -99,7 +102,6 @@ const AdotanteForm = () => {
         value={form[id]}
         onChange={handleForm}
         placeholder={`Digite ${label.toLowerCase()}`}
-        // Ajustado py- para 'py-3.5' para maior altura e text-base para texto maior
         className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${errors[id] ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
       />
       {errors[id] && <p className="text-red-600 text-xs mt-1">{errors[id]}</p>}
@@ -107,10 +109,8 @@ const AdotanteForm = () => {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]"> {/* Adicionado div externa para centralização */}
-      {/* Alterado max-w para permitir que o formulário seja mais largo */}
-      {/* sm:max-w-[500px] e xl:max-w-[600px] aumentam a largura em diferentes tamanhos de tela */}
-      <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[320px] p-0 animate-slideIn"> {/* Aumentado max-w */}
+    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]"> 
+      <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[320px] p-0 animate-slideIn"> 
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl">
 
           {/* Botão Voltar */}
@@ -149,10 +149,8 @@ const AdotanteForm = () => {
               value={form.senha}
               onChange={handleForm}
               placeholder="Crie uma senha"
-              // Ajustado py- para 'py-3.5' e text-base
               className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.senha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            {/* Ícone de olho ajustado para centralização vertical */}
             <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>
@@ -169,10 +167,8 @@ const AdotanteForm = () => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              // Ajustado py- para 'py-3.5' e text-base
               className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${errors.confirmSenha ? "border-red-500" : "border-white/80"} bg-white/95 text-black`}
             />
-            {/* Ícone de olho ajustado para centralização vertical */}
             <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
               {showConfirmSenha ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
             </button>

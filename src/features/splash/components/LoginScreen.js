@@ -13,7 +13,7 @@ const LoginScreen = () => {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginType, setLoginType] = useState("adotante");
+  const [loginType, setLoginType] = useState("adotante"); // Mantemos o estado para a UI/UX, mas não para o serviço
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -65,7 +65,10 @@ const LoginScreen = () => {
         email: form.email,
         password: form.password
       };
-      const userData = await LoginService.login(payload, loginType);
+      
+      // ✨ AQUI ESTÁ A CORREÇÃO: Removido o loginType do argumento da chamada LoginService.login
+      const userData = await LoginService.login(payload); 
+      
       login(userData);
     } catch (err) {
       console.error("Erro ao logar:", err.message);
@@ -96,6 +99,9 @@ const LoginScreen = () => {
           Digite seu e-mail e senha para acessar
         </p>
 
+        {/* ⚠️ Nota: A interface ainda permite escolher entre Adotante e ONG, 
+            mas essa informação não é mais enviada para a API de login. 
+            Se o backend resolve isso pelo e-mail, essa interface pode ser simplificada. */}
         <div className="flex justify-center mb-4 w-full gap-2">
           {["adotante", "ong"].map((type) => (
             <button

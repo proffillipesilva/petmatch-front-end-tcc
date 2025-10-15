@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import api from "../../../shared/utils/api";
+// Removido: import api from "../../../shared/utils/api";
 import { cnpj } from "cpf-cnpj-validator";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa"; // Adicionado FaArrowLeft para consistência
 import Frame1 from "../assets/Frame1.png";
 import AuthImg from "../assets/Auth.png";
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useNavigate } from 'react-router-dom';
+import OngService from '../services/OngService'; // ✨ IMPORTAÇÃO DO NOVO SERVICE
 
-const OngForm = ({ onBackToLogin }) => {
-  const navigate = useNavigate(); // Hook para navegação
+// Removida a prop onBackToLogin (não é mais usada)
+const OngForm = () => {
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     nomeOng: "",
@@ -42,6 +44,7 @@ const OngForm = ({ onBackToLogin }) => {
     e.preventDefault();
     const tempErrors = {};
 
+    // --- Lógica de Validação de Erros (mantida) ---
     if (!form.nomeOng) tempErrors.nomeOng = "O nome é obrigatório!";
     if (!form.nomeFantasiaOng) tempErrors.nomeFantasiaOng = "O nome fantasia é obrigatório!";
     if (!form.razaoSocialOng) tempErrors.razaoSocialOng = "A razão social é obrigatória!";
@@ -59,6 +62,7 @@ const OngForm = ({ onBackToLogin }) => {
     if (!form.confirmSenha) tempErrors.confirmSenha = "A confirmação da senha é obrigatória!";
     else if (form.senha !== form.confirmSenha) tempErrors.confirmSenha = "As senhas não coincidem!";
     if (!form.termos) tempErrors.termos = "Você deve aceitar os termos de uso!";
+    // ------------------------------------------------
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
@@ -67,8 +71,9 @@ const OngForm = ({ onBackToLogin }) => {
 
     try {
       setLoading(true);
-      // ROTA CORRIGIDA para bater com o back-end
-      await api.post("/v1/api/usuarios/ong", {
+      
+      // Prepara o payload para o serviço. Excluímos 'confirmSenha' e 'termos' que não são para o backend.
+      const payload = {
         nomeOng: form.nomeOng,
         nomeFantasiaOng: form.nomeFantasiaOng,
         razaoSocialOng: form.razaoSocialOng,
@@ -78,17 +83,17 @@ const OngForm = ({ onBackToLogin }) => {
         endereco: form.endereco,
         contatoOng: form.contatoOng,
         senha: form.senha,
-      });
+      };
+
+      // ✨ USO DO SERVICE: Chamada da função registerOng
+      await OngService.registerOng(payload);
+      
       alert("Cadastro realizado com sucesso! Faça login para continuar.");
       navigate('/login'); // Redireciona para a tela de login
     } catch (err) {
       console.error(err);
-      if (err.response) {
-        if (err.response.status === 409) alert("CNPJ ou e-mail já cadastrado!");
-        else alert(`Erro: ${err.response.data.message || "Tente novamente."}`);
-      } else {
-        alert("Erro ao cadastrar. Tente novamente.");
-      }
+      // O OngService já formatou a mensagem de erro antes de lançar
+      alert(err.message); 
     } finally {
       setLoading(false);
     }
@@ -113,6 +118,16 @@ const OngForm = ({ onBackToLogin }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[280px] p-0 animate-slideIn">
+        
+        {/* Botão Voltar */}
+        <button
+            onClick={handleBack}
+            className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <FaArrowLeft size={20} />
+            <span className="text-lg font-medium">Voltar</span>
+        </button>
+        
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />

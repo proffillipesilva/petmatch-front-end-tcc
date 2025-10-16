@@ -1,3 +1,5 @@
+// src/services/AdotanteService.js
+
 import api from "../../../shared/utils/api";
 
 /**
@@ -8,14 +10,13 @@ const AdotanteService = {
   /**
    * Realiza o registro de um novo usuário Adotante.
    * @param {object} registerData - Todos os dados do formulário de registro de adotante.
-   * @returns {Promise<object>} - Uma Promise que resolve para os dados do usuário registrado.
+   * @returns {Promise<object>} - Uma Promise que resolve para os dados do usuário registrado, incluindo o token.
    */
   async registerAdotante(registerData) {
     try {
       const endpoint = "/v1/api/usuarios/adotante";
-
-      // O payload é exatamente o objeto que o formulário está enviando
       const response = await api.post(endpoint, registerData);
+      // Assumimos que a resposta.data agora contém { token: "...", ...outrosDados }
       return response.data;
     } catch (error) {
       console.error("Erro no registro de adotante:", error.response || error);
@@ -26,7 +27,6 @@ const AdotanteService = {
         if (error.response.status === 409) {
           errorMessage = "Este email ou CPF já está registrado. Por favor, use outro.";
         } else if (error.response.data && error.response.data.message) {
-          // Captura a mensagem de erro detalhada enviada pelo backend
           errorMessage = error.response.data.message;
         } else {
           errorMessage = `Erro ao cadastrar: Status ${error.response.status}`;

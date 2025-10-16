@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../shared/context/AuthContext';
-import LoginService from '../services/LoginService';
+import { useNavigate } from "react-router-dom";
+import LoginService from "../services/LoginService";
+import useAuthStore from "../../../shared/store/AuthStore";
+import useUserStore from "../../../shared/store/UserStore";
+import { jwtDecode } from "jwt-decode";
 import Frame1 from "../assets/Frame1.png";
 
 const LoginScreen = () => {
@@ -13,34 +15,17 @@ const LoginScreen = () => {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginType, setLoginType] = useState("adotante"); // Mantemos o estado para a UI/UX, mas não para o serviço
+  const [loginType, setLoginType] = useState("adotante");
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setAuthData, fcmToken } = useAuthStore();
+  const { setMe } = useUserStore();
 
   const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const res = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-          }
-        );
-        const userInfo = await res.json();
-        login({
-          nomeOng: userInfo.name,
-          emailOng: userInfo.email,
-          googleId: userInfo.sub,
-          picture: userInfo.picture,
-          tipo: 'ong'
-        });
-      } catch (error) {
-        console.error("Erro ao pegar dados do Google:", error);
-        alert("Falha no login com Google");
-      }
+    onSuccess: async () => {
+      alert("Login com Google ainda não implementado com o backend.");
     },
-    onError: () => alert("Login com Google falhou"),
+    onError: () => alert("Login com Google falhou."),
   });
 
   const handleLogin = async (e) => {
@@ -61,15 +46,24 @@ const LoginScreen = () => {
 
     try {
       setLoading(true);
-      const payload = {
+      const loginResponse = await LoginService.login({
         email: form.email,
-        password: form.password
-      };
-      
-      // ✨ AQUI ESTÁ A CORREÇÃO: Removido o loginType do argumento da chamada LoginService.login
-      const userData = await LoginService.login(payload); 
-      
-      login(userData);
+        password: form.password,
+      });
+
+      const receivedToken = loginResponse.token;
+      if (!receivedToken) throw new Error("Token de autenticação não foi recebido.");
+
+      localStorage.setItem("accessToken", receivedToken);
+      const decodedUser = jwtDecode(receivedToken);
+      setAuthData(receivedToken, decodedUser);
+
+      if (fcmToken) await LoginService.sendToken({ fcmToken });
+
+      const userInfo = await LoginService.me();
+      setMe(userInfo.tipo, userInfo);
+
+      navigate("/dashboard");
     } catch (err) {
       console.error("Erro ao logar:", err.message);
       alert(err.message);
@@ -86,29 +80,43 @@ const LoginScreen = () => {
   };
 
   return (
-    // Adicionada a div externa para centralização
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
-      <div className="relative w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn">
-        <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl">
-          <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
-          <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />
-        </div>
+    <div
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
+      style={{
+        background: "linear-gradient(to bottom, #FFE680, #FFF5CC)",
+        backgroundImage:
+          "url('https://cdn.pixabay.com/photo/2017/01/31/20/26/paw-print-2027703_1280.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "200px",
+        backgroundBlendMode: "soft-light",
+      }}
+    >
+      <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg p-8 sm:p-10 w-full max-w-md text-center">
+        {/* Logo e título */}
+        <h1 className="text-5xl font-extrabold text-black mb-3">PetMatch</h1>
+        <img
+          src={Frame1}
+          alt="logo"
+          className="mx-auto mb-4 w-28 sm:w-32 drop-shadow-md"
+        />
 
-        <h2 className="text-2xl font-bold text-center">Entre na conta</h2>
-        <p className="text-sm font-bold text-center mb-4">
+        <h2 className="text-lg font-semibold text-black mb-1">
+          Entre na conta
+        </h2>
+        <p className="text-sm font-medium text-gray-700 mb-5">
           Digite seu e-mail e senha para acessar
         </p>
 
-        {/* ⚠️ Nota: A interface ainda permite escolher entre Adotante e ONG, 
-            mas essa informação não é mais enviada para a API de login. 
-            Se o backend resolve isso pelo e-mail, essa interface pode ser simplificada. */}
-        <div className="flex justify-center mb-4 w-full gap-2">
+        {/* Tipo de Login */}
+        <div className="flex justify-center mb-6 w-full gap-2">
           {["adotante", "ong"].map((type) => (
             <button
               key={type}
               onClick={() => setLoginType(type)}
-              className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-colors duration-200 shadow-md ${
-                loginType === type ? "bg-black text-white" : "bg-amber-200 text-black"
+              className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-all duration-200 shadow-sm ${
+                loginType === type
+                  ? "bg-black text-white"
+                  : "bg-amber-100 hover:bg-amber-200 text-black"
               }`}
             >
               {type === "adotante" ? "Adotante" : "ONG"}
@@ -116,29 +124,36 @@ const LoginScreen = () => {
           ))}
         </div>
 
-        <form onSubmit={handleLogin} className="w-full space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-black font-medium text-sm">
-              E-mail:
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleForm}
-              placeholder="exemplo@dominio.com"
-              className={`w-full text-sm py-2.5 px-3 rounded-md border-[1.5px] ${
-                emailError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
-            />
-            {emailError && <p className="text-red-600 text-xs mt-1">{emailError}</p>}
-          </div>
+        {/* Formulário */}
+        <form onSubmit={handleLogin} className="w-full text-left">
+          <label
+            htmlFor="email"
+            className="block text-black font-medium text-sm mb-1"
+          >
+            E-mail:
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleForm}
+            placeholder="exemplo@dominio.com"
+            className={`w-full text-sm py-2.5 px-3 rounded-md border ${
+              emailError ? "border-red-500" : "border-gray-300"
+            } focus:outline-none focus:ring-2 focus:ring-amber-400`}
+          />
+          {emailError && (
+            <p className="text-red-600 text-xs mt-1">{emailError}</p>
+          )}
 
+          <label
+            htmlFor="password"
+            className="block text-black font-medium text-sm mt-4 mb-1"
+          >
+            Senha:
+          </label>
           <div className="relative">
-            <label htmlFor="password" className="block text-black font-medium text-sm">
-              Senha:
-            </label>
             <input
               id="password"
               name="password"
@@ -146,25 +161,26 @@ const LoginScreen = () => {
               value={form.password}
               onChange={handleForm}
               placeholder="Digite sua senha"
-              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border-[1.5px] ${
-                passwordError ? "border-red-500" : "border-white/80"
-              } bg-white/95 text-black`}
+              className={`w-full text-sm py-2.5 px-3 pr-10 rounded-md border ${
+                passwordError ? "border-red-500" : "border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-amber-400`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              // Corrigido para centralização vertical
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
             >
-              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-            {passwordError && <p className="text-red-600 text-xs mt-1">{passwordError}</p>}
           </div>
+          {passwordError && (
+            <p className="text-red-600 text-xs mt-1">{passwordError}</p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-base rounded-2xl py-2.5 bg-black text-white font-semibold cursor-pointer transition-colors hover:bg-gray-800 disabled:opacity-50"
+            className="w-full mt-6 py-2.5 rounded-3xl bg-black text-white font-semibold shadow-md hover:bg-gray-800 transition disabled:opacity-50"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
@@ -172,25 +188,25 @@ const LoginScreen = () => {
 
         <div className="flex items-center my-6">
           <hr className="flex-grow border-t border-gray-300" />
-          <span className="px-4 text-gray-500 text-lg">ou continue com</span>
+          <span className="px-3 text-gray-600 text-sm">ou continue com</span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
         <button
           onClick={() => loginWithGoogle()}
-          className="relative w-full py-2.5 rounded-xl border border-gray-300 flex items-center justify-center bg-amber-200 hover:bg-gray-100 transition-colors shadow-md"
+          className="relative w-full py-2.5 rounded-3xl flex items-center justify-center bg-amber-200 hover:bg-amber-300 transition shadow-md font-medium"
         >
           <FcGoogle className="w-5 h-5 absolute left-4" />
-          <span className="text-black font-medium">Google</span>
+          Google
         </button>
 
-        <p className="mt-6 text-lg text-gray-500 text-center">
+        <p className="mt-6 text-sm text-gray-600">
           Não tem uma conta?{" "}
           <a
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              navigate('/tipo-cadastro');
+              navigate("/tipo-cadastro");
             }}
             className="underline text-black hover:text-gray-700"
           >

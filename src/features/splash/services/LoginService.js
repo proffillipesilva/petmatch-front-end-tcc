@@ -1,3 +1,5 @@
+// src/services/LoginService.js
+
 import api from "../../../shared/utils/api";
 
 /**
@@ -6,13 +8,12 @@ import api from "../../../shared/utils/api";
 const LoginService = {
 
   /**
-   * Realiza o registro de um novo usuário.
-   * @param {object} registerData - Os dados de registro do usuário (name, email, password, picture).
-   * @returns {Promise<object>} - Uma Promise que resolve para os dados do usuário registrado.
+   * Realiza o registro de um novo usuário geral.
+   * @param {object} registerData - Os dados de registro do usuário.
+   * @returns {Promise<object>} - Uma Promise que resolve para os dados da resposta (incluindo o token).
    */
   async register(registerData) {
     try {
-      // Usa a instância 'api' para fazer a chamada. A baseURL já está configurada.
       const response = await api.post('/v1/api/auth/register', registerData);
       return response.data;
     } catch (error) {
@@ -31,14 +32,12 @@ const LoginService = {
 
   /**
    * Realiza o login de um usuário.
-   * @param {object} loginData - As credenciais de login do usuário (email, password).
-   * @returns {Promise<object>} - Uma Promise que resolve para os dados do usuário logado.
+   * @param {object} loginData - As credenciais de login (email, password).
+   * @returns {Promise<object>} - Uma Promise que resolve para os dados da resposta (incluindo o token).
    */
   async login(loginData) {
     try {
-      // Usa a instância 'api' para fazer a chamada. A baseURL já está configurada.
       const response = await api.post('/v1/api/auth/login', loginData);
-      console.log(response)
       return response.data;
     } catch (error) {
       console.error('Erro no login:', error.response || error);
@@ -56,18 +55,15 @@ const LoginService = {
 
   /**
    * Obtém os dados do usuário autenticado ('me').
-   * @returns {Promise<object>} - Uma Promise que resolve para os dados do usuário logado.
+   * @returns {Promise<object>} - Uma Promise que resolve para os dados completos do usuário logado.
    */
   async me() {
     try {
-      // Usa a instância 'api' para fazer a chamada. A baseURL já está configurada.
       const response = await api.get('/v1/api/users/me');
       return response.data;
     } catch (error) {
       console.error('Erro no me:', error.response || error);
-
-      // Assume que o erro da API retorna a mensagem diretamente
-      throw new Error(error.response.data.message);
+      throw new Error(error.response?.data?.message || 'Não foi possível buscar os dados do usuário.');
     }
   },
 
@@ -78,9 +74,7 @@ const LoginService = {
    */
   async sendToken(tokenData) {
     try {
-      // Usa a instância 'api' para fazer a chamada. A baseURL já está configurada.
       const response = await api.put('/v1/api/notifications/token', tokenData);
-      console.log(response)
       return response.data;
     } catch (error) {
       console.error('Erro no envio do token:', error.response || error);

@@ -11,7 +11,6 @@
 //MANO ISSO AQUI NAO TA ATUALIZADO IGUAL AO ADOTANTEEEEEE TEM QUE ARRUMAR AINDAAAA
 //MANO ISSO AQUI NAO TA ATUALIZADO IGUAL AO ADOTANTEEEEEE TEM QUE ARRUMAR AINDAAAA
 
-
 import React, { useState } from "react";
 // Removido: import api from "../../../shared/utils/api";
 import { cnpj } from "cpf-cnpj-validator";

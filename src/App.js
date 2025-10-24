@@ -19,6 +19,8 @@ import { Toaster } from 'react-hot-toast'; // Importe o componente Toaster
 import { requestForToken, onMessageListener } from './firebase';
 import useAuthStore from './shared/store/AuthStore';
 import './index.css';
+import AdotarScreen from './features/home/AdotarScreen';
+import NovidadesScreen from './features/home/NovidadesScreen';
 
 function App() {
   const [token, setToken] = React.useState(null);
@@ -62,6 +64,8 @@ function App() {
               <Route path="/tipo-cadastro" element={<SplashScreen><TipoCadastro /></SplashScreen>} />
               <Route path="/adotante-form" element={<SplashScreen><AdotanteForm /></SplashScreen>} />
               <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
+              <Route path="/novidades" element={<NovidadesScreen />} />
+              <Route path="/adotar" element={<AdotarScreen />} />
             </Route>
           </Routes>
         </AuthProvider>

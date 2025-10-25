@@ -1,5 +1,3 @@
-// src/services/LoginService.js
-
 import api from "../../../shared/utils/api";
 
 /**
@@ -59,7 +57,8 @@ const LoginService = {
    */
   async me() {
     try {
-      const response = await api.get('/v1/api/users/me');
+      // CORREÇÃO AQUI: Trocando 'users' por 'usuarios' para corresponder ao Back-end (erro 404)
+      const response = await api.get('/v1/api/usuarios/me');
       return response.data;
     } catch (error) {
       console.error('Erro no me:', error.response || error);

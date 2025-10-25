@@ -46,70 +46,134 @@ const AdotanteForm = () => {
     e.preventDefault();
     const tempErrors = {};
 
-    if (!form.nomeAdotante) tempErrors.nomeAdotante = "O nome é obrigatório!";
-    if (!form.cpfAdotante) tempErrors.cpfAdotante = "O CPF é obrigatório!";
-    else if (!cpf.isValid(form.cpfAdotante)) tempErrors.cpfAdotante = "CPF inválido!";
+  // Validações básicas
+  if (!form.nomeAdotante) tempErrors.nomeAdotante = "O nome é obrigatório!";
+  if (!form.cpfAdotante) tempErrors.cpfAdotante = "O CPF é obrigatório!";
+  else if (!cpf.isValid(form.cpfAdotante)) tempErrors.cpfAdotante = "CPF inválido!";
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
-    if (!form.emailAdotante) tempErrors.emailAdotante = "O e-mail é obrigatório!";
-    else if (!emailRegex.test(form.emailAdotante))
-      tempErrors.emailAdotante = "Digite um e-mail válido que termine com '.com'";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+  if (!form.emailAdotante) tempErrors.emailAdotante = "O e-mail é obrigatório!";
+  else if (!emailRegex.test(form.emailAdotante))
+    tempErrors.emailAdotante = "Digite um e-mail válido que termine com '.com'";
 
-    if (!form.celularAdotante) tempErrors.celularAdotante = "O celular é obrigatório!";
-    if (!form.enderecoAdotante) tempErrors.enderecoAdotante = "O endereço é obrigatório!";
-    if (!form.descricaoOutrosAnimais)
-      tempErrors.descricaoOutrosAnimais = "A descrição é obrigatória!";
-    if (!form.preferencia) tempErrors.preferencia = "A preferência é obrigatória!";
-    if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
-    if (!form.confirmSenha)
-      tempErrors.confirmSenha = "A confirmação da senha é obrigatória!";
-    else if (form.senha !== form.confirmSenha)
-      tempErrors.confirmSenha = "As senhas não coincidem!";
-    if (!form.termos) tempErrors.termos = "Você deve aceitar os termos de uso!";
+  if (!form.celularAdotante) tempErrors.celularAdotante = "O celular é obrigatório!";
+  if (!form.enderecoAdotante) tempErrors.enderecoAdotante = "O endereço é obrigatório!";
+  if (!form.descricaoOutrosAnimais)
+    tempErrors.descricaoOutrosAnimais = "A descrição é obrigatória!";
+  if (!form.preferencia) tempErrors.preferencia = "A preferência é obrigatória!";
 
-    if (Object.keys(tempErrors).length > 0) {
-      setErrors(tempErrors);
-      return;
-    }
+  // ✅ Validação de senha (mínimo 8 caracteres, letras e especial — sem exigir números)
+  const senhaRegex = /^(?=.*[A-Za-z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
+  else if (!senhaRegex.test(form.senha))
+    tempErrors.senha =
+      "A senha deve ter no mínimo 8 caracteres e conter letras e pelo menos um caractere especial (@, #, !, etc).";
 
-    try {
-      setLoading(true);
+  if (!form.confirmSenha)
+    tempErrors.confirmSenha = "A confirmação da senha é obrigatória!";
+  else if (form.senha !== form.confirmSenha)
+    tempErrors.confirmSenha = "As senhas não coincidem!";
 
-      const payload = {
-        nomeAdotante: form.nomeAdotante,
-        cpfAdotante: form.cpfAdotante,
-        enderecoAdotante: form.enderecoAdotante,
-        celularAdotante: form.celularAdotante,
-        emailAdotante: form.emailAdotante,
-        descricaoOutrosAnimais: form.descricaoOutrosAnimais,
-        preferencia: form.preferencia,
-        senha: form.senha,
-      };
+  if (!form.termos) tempErrors.termos = "Você deve aceitar os termos de uso!";
 
-      console.log("Enviando requisição de registro de adotante...");
-      const registerResponse = await AdotanteService.registerAdotante(payload);
-      const receivedToken = registerResponse.token;
+  if (Object.keys(tempErrors).length > 0) {
+    setErrors(tempErrors);
+    return;
+  }
 
-      if (!receivedToken) throw new Error("Token não recebido após o registro.");
+  try {
+    setLoading(true);
 
-      localStorage.setItem("accessToken", receivedToken);
-      const decodedUser = jwtDecode(receivedToken);
-      setAuthData(receivedToken, decodedUser);
+    const payload = {
+      name: form.nomeAdotante,
+      email: form.emailAdotante,
+      password: form.senha,
+      cpf: form.cpfAdotante,
+      endereco: form.enderecoAdotante,
+      celular: form.celularAdotante,
+      descricaoOutrosAnimais: form.descricaoOutrosAnimais,
+      preferencia: form.preferencia,
+    };
 
-      if (fcmToken) await LoginService.sendToken({ fcmToken });
+    console.log("Enviando requisição de registro de adotante...");
+    const registerResponse = await AdotanteService.registerAdotante(payload);
+    const receivedToken = registerResponse.token;
 
-      console.log("Buscando informações completas do usuário (/me)...");
-      const userInfo = await LoginService.me();
-      setMe(userInfo.tipo, userInfo);
+    if (!receivedToken) throw new Error("Token não recebido após o registro.");
 
-      alert("Cadastro realizado com sucesso! Você já está logado.");
-      navigate("/dashboard");
-    } catch (err) {
-      console.error("Erro ao cadastrar:", err);
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
+    localStorage.setItem("accessToken", receivedToken);
+    const decodedUser = jwtDecode(receivedToken);
+    setAuthData(receivedToken, decodedUser);
+
+    if (fcmToken) await LoginService.sendToken({ fcmToken });
+
+    console.log("Buscando informações completas do usuário (/me)...");
+    const userInfo = await LoginService.me();
+    setMe(userInfo.tipo, userInfo);
+
+    navigate("/adotante-home");
+} catch (err) {
+  console.error("Erro ao cadastrar:", err);
+
+  const backendMessage = err.response?.data?.message?.toLowerCase() || "";
+  const statusCode = err.response?.status;
+
+  console.log("Status recebido:", statusCode);
+  console.log("Mensagem do backend:", backendMessage);
+
+  if (backendMessage.includes("não passaram na validação")) {
+    setErrors((prev) => ({
+      ...prev,
+      senha:
+        "Os dados enviados não passaram na validação. Verifique se a senha possui pelo menos 8 caracteres e um símbolo especial.",
+    }));
+  }
+
+  // ✅ CPF já cadastrado
+  else if (backendMessage.includes("cpf já cadastrado")) {
+    setErrors((prev) => ({
+      ...prev,
+      cpfAdotante: "Este CPF já está cadastrado. Tente outro.",
+    }));
+  }
+
+  // ✅ E-mail já cadastrado
+  else if (
+    backendMessage.includes("email já cadastrado") ||
+    backendMessage.includes("e-mail já cadastrado")
+  ) {
+    setErrors((prev) => ({
+      ...prev,
+      emailAdotante: "Este e-mail já está cadastrado. Tente outro.",
+    }));
+  }
+
+  // ✅ Caso o backend não envie mensagem, mas seja erro 409
+  else if (statusCode === 409) {
+    setErrors((prev) => ({
+      ...prev,
+      geral: "E-mail ou CPF já cadastrado. Tente novamente com outros dados.",
+    }));
+  }
+
+  // Outros erros com mensagem
+  else if (backendMessage) {
+    setErrors((prev) => ({
+      ...prev,
+      geral: err.response.data.message,
+    }));
+  }
+
+  // Erros totalmente inesperados
+  else {
+    setErrors((prev) => ({
+      ...prev,
+      geral: "E-mail ou CPF já cadastrado. Tente novamente.",
+    }));
+  }
+} finally {
+  setLoading(false);
+}
   };
 
   const renderInput = (id, label, type = "text") => (
@@ -245,6 +309,11 @@ const AdotanteForm = () => {
           </div>
           {errors.termos && (
             <p className="text-red-600 text-xs mt-1">{errors.termos}</p>
+          )}
+
+          {/* Erro geral */}
+          {errors.geral && (
+            <p className="text-red-600 text-sm text-center mt-2">{errors.geral}</p>
           )}
 
           <button

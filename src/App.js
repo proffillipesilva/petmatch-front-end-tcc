@@ -48,26 +48,38 @@ function App() {
         <Router>
           <AuthProvider>
             <Routes>
-              {/* Rota pública */}
+              {/* GRUPO 1: ROTAS PÚBLICAS GERAIS (Para todos)
+                Estas rotas não são protegidas por NENHUMA rota de autenticação.
+                Qualquer um, logado ou deslogado, pode vê-las.
+              */}
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/adotar" element={<AdotarScreen />} />
+                <Route path="/novidades" element={<NovidadesScreen />} />
+              </Route>
+
+              {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados)
+                Estas são as rotas que o <PublicRoute /> DEVE proteger.
+                (Login, Cadastro, etc.)
+              */}
               <Route element={<PublicRoute />}>
                 <Route element={<MainLayout />}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/adotar" element={<AdotarScreen />} />
-                  <Route path="/novidades" element={<NovidadesScreen />} />
-
                 <Route path="/login" element={<SplashScreen><LoginScreen /></SplashScreen>} />
                 <Route path="/tipo-cadastro" element={<SplashScreen><TipoCadastro /></SplashScreen>} />
                 <Route path="/adotante-form" element={<SplashScreen><AdotanteForm /></SplashScreen>} />
                 <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
-              </Route>
                 </Route>
-              {/* Rotas privadas */}
+              </Route>
+              {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados)
+                (Isto já estava correto)
+              */}
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
                 </Route>
               </Route>
+
             </Routes>
           </AuthProvider>
         </Router>

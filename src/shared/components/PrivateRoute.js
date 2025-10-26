@@ -1,23 +1,20 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Navbar from './Navbar';
+// [ALTERAÇÃO] Importa o store do Zustand em vez do Context
+import useAuthStore from '../store/AuthStore';
 
 const PrivateRoute = () => {
-  const { isAuthenticated } = useAuth();
+  // [ALTERAÇÃO] Lê o token diretamente do Zustand
+  const token = useAuthStore((state) => state.token);
   
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+  if (!token) {
+    // [ALTERAÇÃO] Redireciona para /login se não estiver autenticado
+    return <Navigate to="/login" replace />;
   }
   
-  return (
-    <>
-      <Navbar />
-      <div className="flex min-h-screen pt-20">
-        <Outlet />
-      </div>
-    </>
-  );
+  // [ALTERAÇÃO] Apenas renderiza o <Outlet /> (as rotas filhas protegidas)
+  // O layout (Navbar, etc.) deve estar no seu componente MainLayout
+  return <Outlet />;
 };
 
 export default PrivateRoute;

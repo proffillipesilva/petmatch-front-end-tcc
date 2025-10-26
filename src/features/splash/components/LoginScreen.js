@@ -63,7 +63,7 @@ const LoginScreen = () => {
       const userInfo = await LoginService.me();
       setMe(userInfo.tipo, userInfo);
 
-      navigate("/dashboard");
+      navigate("/adotante-home");
     } catch (err) {
       console.error("Erro ao logar:", err.message);
       alert(err.message);
@@ -81,7 +81,7 @@ const LoginScreen = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
+      className="w-full flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]"
       style={{
         background: "linear-gradient(to bottom, #FFE680, #FFF5CC)",
         backgroundImage:
@@ -91,7 +91,7 @@ const LoginScreen = () => {
         backgroundBlendMode: "soft-light",
       }}
     >
-      <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg p-8 sm:p-10 w-full max-w-md text-center">
+      <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg p-8 sm:p-10 w-full max-w-[700px] text-center">
         {/* Logo e título */}
         <h1 className="text-5xl font-extrabold text-black mb-3">PetMatch</h1>
         <img

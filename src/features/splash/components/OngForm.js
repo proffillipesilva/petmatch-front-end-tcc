@@ -128,19 +128,17 @@ const OngForm = () => {
     </div>
   );
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
-      <div className="relative w-full max-w-lg sm:max-w-[500px] xl:max-w-[600px] min-w-[280px] p-0 animate-slideIn">
-        
-        {/* Botão Voltar */}
-        <button
-            onClick={handleBack}
-            className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <FaArrowLeft size={20} />
-            <span className="text-lg font-medium">Voltar</span>
-        </button>
-        
+return (
+    <div className="w-full flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
+    {/* Botão Voltar */}
+    <button
+      onClick={handleBack}
+      className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-gray-200 transition-colors z-50"
+    >
+      <FaArrowLeft size={20} />
+      <span className="text-lg font-medium">Voltar</span>
+    </button>
+<div className="relative w-full max-w-[500px] min-w-[320px] p-0 animate-slideIn">
         <div className="flex flex-col items-center mb-7 text-black font-bold text-3xl text-shadow">
           <h2 className="logo-title text-6xl font-bold">PetMatch</h2>
           <img src={Frame1} alt="logo" className="max-w-[200px] mt-2.5" />

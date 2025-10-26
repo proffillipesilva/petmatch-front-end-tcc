@@ -20,7 +20,7 @@ const TipoCadastro = () => {
   };
 
   return (
-<div className="relative flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
+<div className="w-full relative flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
   {/* Botão Voltar */}
   <button
     onClick={handleBack}
@@ -30,7 +30,7 @@ const TipoCadastro = () => {
     <span className="text-lg font-medium">Voltar</span>
   </button>
 
-  <div className="w-full max-w-md sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn z-10">
+  <div className="w-full max-w-[500px] max-w-[700px] sm:max-w-[400px] xl:max-w-[420px] min-w-[280px] p-0 animate-slideIn z-10">
     {/* Logo e título */}
     <div className="flex flex-col items-center mb-7">
       <h1 className="text-6xl font-bold">PetMatch</h1>
@@ -43,7 +43,7 @@ const TipoCadastro = () => {
     </p>
 
     {/* Botões de seleção */}
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 ">
       <button
         onClick={handleSelectAdotante}
         className="w-full py-3 rounded-2xl bg-black text-white font-semibold hover:bg-gray-800 transition-colors"

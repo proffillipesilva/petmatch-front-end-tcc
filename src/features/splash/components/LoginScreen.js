@@ -3,80 +3,91 @@ import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
+import publicApi from "../../../shared/utils/publicApi";
 import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
 import useUserStore from "../../../shared/store/UserStore";
-import { jwtDecode } from "jwt-decode";
 import Frame1 from "../assets/Frame1.png";
 
 const LoginScreen = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState("adotante");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
   const { setMe } = useUserStore();
 
+  // 🔹 Login com Google (placeholder)
   const loginWithGoogle = useGoogleLogin({
-    onSuccess: async () => {
-      alert("Login com Google ainda não implementado com o backend.");
-    },
-    onError: () => alert("Login com Google falhou."),
+    onSuccess: () => alert("Login com Google ainda não implementado."),
+    onError: () => alert("Falha no login com Google."),
   });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    let hasError = false;
-
-    if (!form.email) {
-      setEmailError("O e-mail é obrigatório!");
-      hasError = true;
-    } else setEmailError("");
-
-    if (!form.password) {
-      setPasswordError("A senha é obrigatória!");
-      hasError = true;
-    } else setPasswordError("");
-
-    if (hasError) return;
-
-    try {
-      setLoading(true);
-      const loginResponse = await LoginService.login({
-        email: form.email,
-        password: form.password,
-      });
-
-      const receivedToken = loginResponse.token;
-      if (!receivedToken) throw new Error("Token de autenticação não foi recebido.");
-
-      localStorage.setItem("accessToken", receivedToken);
-      const decodedUser = jwtDecode(receivedToken);
-      setAuthData(receivedToken, decodedUser);
-
-      if (fcmToken) await LoginService.sendToken({ fcmToken });
-
-      const userInfo = await LoginService.me();
-      setMe(userInfo.tipo, userInfo);
-
-      navigate("/adotante-home");
-    } catch (err) {
-      console.error("Erro ao logar:", err.message);
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // 🔹 Atualiza campos do formulário
   const handleForm = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     if (name === "email") setEmailError("");
     if (name === "password") setPasswordError("");
+  };
+
+  // 🔹 Login com e-mail e senha
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    if (!form.email) {
+      setEmailError("O e-mail é obrigatório!");
+      return;
+    }
+    if (!form.password) {
+      setPasswordError("A senha é obrigatória!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // 🚀 Chama o endpoint do backend
+      const response = await publicApi.post("/v1/api/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      const token = response.data.token;
+      if (!token) throw new Error("Token JWT não recebido do servidor.");
+
+      // 🔐 Decodifica e salva o token globalmente
+      const decodedUser = jwtDecode(token);
+      setAuthData(token, decodedUser);
+      localStorage.setItem("accessToken", token);
+
+      // 🔄 Busca dados completos do usuário
+      const userInfo = await LoginService.me();
+      setMe(userInfo.tipo, userInfo);
+
+      // 🔔 Envia FCM Token (notificações)
+      if (fcmToken) {
+        await LoginService.sendToken({ fcmToken });
+      }
+
+      // ✅ Redireciona após login
+      if (loginType === "ong") {
+        navigate("/ong-home");
+      } else {
+        navigate("/adotante-home");
+      }
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      alert(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,10 +112,10 @@ const LoginScreen = () => {
         />
 
         <h2 className="text-lg font-semibold text-black mb-1">
-          Entre na conta
+          Entre na sua conta
         </h2>
         <p className="text-sm font-medium text-gray-700 mb-5">
-          Digite seu e-mail e senha para acessar
+          Digite seu e-mail e senha para continuar
         </p>
 
         {/* Tipo de Login */}
@@ -186,12 +197,14 @@ const LoginScreen = () => {
           </button>
         </form>
 
+        {/* Divider */}
         <div className="flex items-center my-6">
           <hr className="flex-grow border-t border-gray-300" />
           <span className="px-3 text-gray-600 text-sm">ou continue com</span>
           <hr className="flex-grow border-t border-gray-300" />
         </div>
 
+        {/* Botão Google */}
         <button
           onClick={() => loginWithGoogle()}
           className="relative w-full py-2.5 rounded-3xl flex items-center justify-center bg-amber-200 hover:bg-amber-300 transition shadow-md font-medium"
@@ -200,6 +213,7 @@ const LoginScreen = () => {
           Google
         </button>
 
+        {/* Link de cadastro */}
         <p className="mt-6 text-sm text-gray-600">
           Não tem uma conta?{" "}
           <a

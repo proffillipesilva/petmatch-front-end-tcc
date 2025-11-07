@@ -6,7 +6,7 @@ const { showLoading, showSuccess, showError, closeModal } = useStatusModalStore.
 
 const publicApi = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL 
-});
+}); 
 
 // -----------------------------------------------------------------
 // Request Interceptor (APENAS Modal)

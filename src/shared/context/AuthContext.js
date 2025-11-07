@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import useAuthStore from "../store/AuthStore";
+import useUserStore from "../store/UserStore";
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -28,7 +31,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", jwtToken);
 
-    if (userData.tipo === "ong" || userData.accessLevel === "ONG") {
+    useAuthStore.getState().setAuthData(jwtToken, jwtToken ? JSON.parse(atob(jwtToken.split('.')[1])) : null);
+    useUserStore.getState().setMe(userData.tipo, userData);
+
+    // ✨✨ CORREÇÃO AQUI ✨✨
+    // Agora verificamos se 'userData.tipo' é 'ONG' (maiúsculo),
+    // que é o que o seu backend está enviando.
+    if (userData.tipo === "ONG") {
       navigate("/ong-home");
     } else {
       navigate("/adotante-home");
@@ -39,8 +48,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
+
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+
+    useAuthStore.getState().logout();
+    useUserStore.getState().logout();
+
     navigate("/login");
   };
 

@@ -11,17 +11,22 @@ import useAuthStore from "../../../shared/store/AuthStore";
 import useUserStore from "../../../shared/store/UserStore";
 import Frame1 from "../assets/Frame1.png";
 
+// Importe o useAuth do seu AuthContext
+import { useAuth } from "../../../shared/context/AuthContext";
+
 const LoginScreen = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loginType, setLoginType] = useState("adotante");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
   const { setMe } = useUserStore();
+
+  // Pegue a função 'login' do seu AuthContext
+  const { login } = useAuth();
 
   // 🔹 Login com Google (placeholder)
   const loginWithGoogle = useGoogleLogin({
@@ -62,26 +67,25 @@ const LoginScreen = () => {
       const token = response.data.token;
       if (!token) throw new Error("Token JWT não recebido do servidor.");
 
-      // 🔐 Decodifica e salva o token globalmente
+      // 🔐 Decodifica (somente para o Zustand)
       const decodedUser = jwtDecode(token);
       setAuthData(token, decodedUser);
-      localStorage.setItem("accessToken", token);
 
       // 🔄 Busca dados completos do usuário
       const userInfo = await LoginService.me();
-      setMe(userInfo.tipo, userInfo);
+      setMe(userInfo.tipo, userInfo); // Salva no Zustand UserStore
+
+      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
+      // Chamamos a função 'login' do AuthContext.
+      // Ela vai salvar os dados, definir isAuthenticated
+      // e REDIRECIONAR automaticamente para a home correta.
+      login(userInfo, token);
 
       // 🔔 Envia FCM Token (notificações)
       if (fcmToken) {
         await LoginService.sendToken({ fcmToken });
       }
 
-      // ✅ Redireciona após login
-      if (loginType === "ong") {
-        navigate("/ong-home");
-      } else {
-        navigate("/adotante-home");
-      }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       alert(error.response?.data?.message || error.message);
@@ -118,22 +122,7 @@ const LoginScreen = () => {
           Digite seu e-mail e senha para continuar
         </p>
 
-        {/* Tipo de Login */}
-        <div className="flex justify-center mb-6 w-full gap-2">
-          {["adotante", "ong"].map((type) => (
-            <button
-              key={type}
-              onClick={() => setLoginType(type)}
-              className={`flex-1 px-4 py-2 font-semibold text-sm rounded-full transition-all duration-200 shadow-sm ${
-                loginType === type
-                  ? "bg-black text-white"
-                  : "bg-amber-100 hover:bg-amber-200 text-black"
-              }`}
-            >
-              {type === "adotante" ? "Adotante" : "ONG"}
-            </button>
-          ))}
-        </div>
+        {/* ❌ REMOVIDO: O seletor de tipo de login foi removido. */}
 
         {/* Formulário */}
         <form onSubmit={handleLogin} className="w-full text-left">

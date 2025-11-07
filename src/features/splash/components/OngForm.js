@@ -5,33 +5,36 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 import OngService from "../services/OngService";
-import LoginService from "../services/LoginService"; // [ALTERAÇÃO] Importado
-import useAuthStore from "../../../shared/store/AuthStore"; // [ALTERAÇÃO] Importado
-import useUserStore from "../../../shared/store/UserStore"; // [ALTERAÇÃO] Importado
+import LoginService from "../services/LoginService";
+import useAuthStore from "../../../shared/store/AuthStore";
+import useUserStore from "../../../shared/store/UserStore";
+
+// ✨ NOVO: Importe o useAuth do seu AuthContext
+import { useAuth } from "../../../shared/context/AuthContext";
 
 import Frame1 from "../assets/Frame1.png";
-// import AuthImg from "../assets/Auth.png"; // Removido, não estava em uso
 
 const OngForm = () => {
   const navigate = useNavigate();
-  // [ALTERAÇÃO] Stores de autenticação e usuário
   const { setAuthData, fcmToken } = useAuthStore();
   const { setMe } = useUserStore();
 
-const [form, setForm] = useState({
-  nomeOng: "",
-  nomeFantasiaOng: "",
-  razaoSocialOng: "",
-  emailOng: "",
-  telefone: "",
-  celular: "", // <-- adicione isso
-  cnpj: "",
-  endereco: "",
-  senha: "",
-  confirmSenha: "",
-  termos: false,
-});
+  // ✨ NOVO: Pegue a função 'login' do seu AuthContext
+  const { login } = useAuth();
 
+  const [form, setForm] = useState({
+    nomeOng: "",
+    nomeFantasiaOng: "",
+    razaoSocialOng: "",
+    emailOng: "",
+    telefone: "",
+    celular: "",
+    cnpj: "",
+    endereco: "",
+    senha: "",
+    confirmSenha: "",
+    termos: false,
+  });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -52,7 +55,7 @@ const [form, setForm] = useState({
     e.preventDefault();
     const tempErrors = {};
 
-    // --- Lógica de Validação de Erros (Atualizada) ---
+    // --- Lógica de Validação de Erros ---
     if (!form.nomeOng) tempErrors.nomeOng = "O nome é obrigatório!";
     if (!form.nomeFantasiaOng)
       tempErrors.nomeFantasiaOng = "O nome fantasia é obrigatório!";
@@ -71,7 +74,6 @@ const [form, setForm] = useState({
     if (!form.celular)
       tempErrors.celular = "O celular da ONG é obrigatório!";
 
-    // [ALTERAÇÃO] Validação de senha robusta
     const senhaRegex = /^(?=.*[A-Za-z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
     else if (!senhaRegex.test(form.senha))
@@ -93,29 +95,16 @@ const [form, setForm] = useState({
     try {
       setLoading(true);
 
-      // Prepara o payload para o serviço.
       const payload = {
-          name: form.nomeOng,         // mapeia o campo do form para 'name'
-          email: form.emailOng,       // deve ser 'email'
-          password: form.senha,       // deve ser 'password'
-          endereco: form.endereco,    // igual ao DTO
-          telefone: form.telefone,    // igual ao DTO
-          celular: form.celular,      // igual ao DTO
-          cnpj: form.cnpj             // igual ao DTO
-
-
-        //nomeOng: form.nomeOng,
-        //nomeFantasiaOng: form.nomeFantasiaOng,
-        //razaoSocialOng: form.razaoSocialOng,
-        //emailOng: form.emailOng,
-        //telefone: form.telefone,
-        //cnpj: form.cnpj,
-        //endereco: form.endereco,
-        //contatoOng: form.contatoOng,
-        //password: form.senha,
+        name: form.nomeOng,
+        email: form.emailOng,
+        password: form.senha,
+        endereco: form.endereco,
+        telefone: form.telefone,
+        celular: form.celular,
+        cnpj: form.cnpj
       };
 
-      // [ALTERAÇÃO] Fluxo de login idêntico ao AdotanteForm
       console.log("Enviando requisição de registro de ONG...");
       const registerResponse = await OngService.registerOng(payload);
       const receivedToken = registerResponse.token;
@@ -123,25 +112,28 @@ const [form, setForm] = useState({
       if (!receivedToken)
         throw new Error("Token não recebido após o registro.");
 
-      localStorage.setItem("accessToken", receivedToken);
-      const decodedUser = jwtDecode(receivedToken);
-
-      // 1. Apenas atualiza o store de autenticação
-      setAuthData(receivedToken, decodedUser);
+      // ❌ REMOVIDO: `login` (do AuthContext) já faz isso.
+      // localStorage.setItem("accessToken", receivedToken);
+      // const decodedUser = jwtDecode(receivedToken);
+      // setAuthData(receivedToken, decodedUser);
 
       if (fcmToken) await LoginService.sendToken({ fcmToken });
 
       console.log("Buscando informações completas do usuário (/me)...");
       const userInfo = await LoginService.me();
 
-      // 2. Apenas atualiza o store do usuário
-      setMe(userInfo.tipo, userInfo);
+      // ❌ REMOVIDO: `login` (do AuthContext) já faz isso.
+      // setMe(userInfo.tipo, userInfo);
 
-      // [ALTERAÇÃO] Navegação removida. O PublicRoute cuidará disso.
-      // alert("Cadastro realizado com sucesso! Faça login para continuar.");
-      // navigate('/login');
+      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
+      // Esta função (do AuthContext) fará TUDO:
+      // 1. Salvar no Context
+      // 2. Salvar no LocalStorage (chaves 'user' e 'token')
+      // 3. Salvar nos stores Zustand (auth-storage e user-storage)
+      // 4. Redirecionar para a /ong-home
+      login(userInfo, receivedToken);
+      
     } catch (err) {
-      // [ALTERAÇÃO] Tratamento de erro idêntico ao AdotanteForm
       console.error("Erro ao cadastrar:", err);
 
       const backendMessage = err.response?.data?.message?.toLowerCase() || "";
@@ -155,7 +147,6 @@ const [form, setForm] = useState({
             "Os dados enviados não passaram na validação. Verifique se a senha possui pelo menos 8 caracteres e um símbolo especial.",
         }));
       }
-      // Adaptado para CNPJ
       else if (backendMessage.includes("cnpj já cadastrado")) {
         setErrors((prev) => ({
           ...prev,
@@ -172,7 +163,7 @@ const [form, setForm] = useState({
       } else if (statusCode === 409) {
         setErrors((prev) => ({
           ...prev,
-          geral: "E-mail ou CNPJ já cadastrado. Tente novamente com outros dados.", // Adaptado
+          geral: "E-mail ou CNPJ já cadastrado. Tente novamente com outros dados.",
         }));
       } else if (backendMessage) {
         setErrors((prev) => ({
@@ -182,7 +173,7 @@ const [form, setForm] = useState({
       } else {
         setErrors((prev) => ({
           ...prev,
-          geral: "E-mail ou CNPJ já cadastrado. Tente novamente.", // Adaptado
+          geral: "E-mail ou CNPJ já cadastrado. Tente novamente.",
         }));
       }
     } finally {
@@ -328,7 +319,7 @@ const [form, setForm] = useState({
             <p className="text-red-600 text-xs mt-1">{errors.termos}</p>
           )}
 
-          {/* [ALTERAÇÃO] Erro geral adicionado */}
+          {/* Erro geral */}
           {errors.geral && (
             <p className="text-red-600 text-sm text-center mt-2">
               {errors.geral}

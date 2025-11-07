@@ -9,6 +9,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  
+  // A 'user' pode ser null no primeiro render, então usamos 'user?.tipo' etc.
   const welcomeMessage = user?.nomeOng || user?.nomeAdotante || "Bem-vindo(a)";
 
   useEffect(() => {
@@ -35,18 +37,50 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     setMenuOpen(false);
-    navigate("/login"); // redireciona após logout
+    // A função logout() no AuthContext já redireciona,
+    // mas por segurança podemos deixar esta linha.
+    navigate("/login"); 
+  };
+
+  // ✨✨ NOVA FUNÇÃO ✨✨
+  // Esta função decide para onde o botão "Início" deve levar
+  const handleHomeClick = () => {
+    // Verifica se o usuário está logado E se o objeto 'user' existe
+    if (isAuthenticated && user) {
+      // Usamos 'user.tipo' (que vem do AuthContext)
+      if (user.tipo === "ONG") {
+        handleNavigate("/ong-home");
+      } else {
+        // Assume que qualquer outro tipo logado é um adotante
+        handleNavigate("/adotante-home");
+      }
+    } else {
+      // Se não estiver logado, vai para a home pública
+      handleNavigate("/");
+    }
   };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 h-20 flex items-center justify-between px-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+        {/* O Logo continuará levando para a home pública "/" */}
         <div onClick={() => handleNavigate("/")} className="cursor-pointer">
           <img src={Logo} alt="Logo PetMatch" className="h-14 max-w-[120px]" />
         </div>
         <div className="flex items-center space-x-6">
           <ul className="flex items-center space-x-4">
-            <li><button onClick={() => handleNavigate("/")} className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"><FaHome /> Início</button></li>
+            
+            {/* ✨✨ ALTERAÇÃO AQUI ✨✨
+                O onClick agora usa a nova função handleHomeClick */}
+            <li>
+              <button 
+                onClick={handleHomeClick} 
+                className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
+              >
+                <FaHome /> Início
+              </button>
+            </li>
+
             <li><button onClick={() => handleNavigate("/adotar")} className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"><FaPaw /> Adotar</button></li>
             <li><button onClick={() => handleNavigate("/novidades")} className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"><FaStar /> Novidades</button></li>
           </ul>

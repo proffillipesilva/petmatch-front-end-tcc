@@ -22,6 +22,11 @@ import useAuthStore from './shared/store/AuthStore';
 import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
 
+// --- NOVOS IMPORTES ---
+// (Caminho atualizado para onde você moveu os arquivos)
+import EventoList from './features/splash/components/EventoList';
+import EventoForm from './features/splash/components/EventoForm';
+
 import './index.css';
 
 function App() {
@@ -48,20 +53,14 @@ function App() {
         <Router>
           <AuthProvider>
             <Routes>
-              {/* GRUPO 1: ROTAS PÚBLICAS GERAIS (Para todos)
-                Estas rotas não são protegidas por NENHUMA rota de autenticação.
-                Qualquer um, logado ou deslogado, pode vê-las.
-              */}
+              {/* GRUPO 1: ROTAS PÚBLICAS GERAIS */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/adotar" element={<AdotarScreen />} />
                 <Route path="/novidades" element={<NovidadesScreen />} />
               </Route>
 
-              {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados)
-                Estas são as rotas que o <PublicRoute /> DEVE proteger.
-                (Login, Cadastro, etc.)
-              */}
+              {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados) */}
               <Route element={<PublicRoute />}>
                 <Route element={<MainLayout />}>
                 <Route path="/login" element={<SplashScreen><LoginScreen /></SplashScreen>} />
@@ -70,13 +69,19 @@ function App() {
                 <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
                 </Route>
               </Route>
-              {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados)
-                (Isto já estava correto)
-              */}
+
+              {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados) */}
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
+                  
+                  {/* === NOVAS ROTAS DE EVENTOS === */}
+                  {/* Página de listagem de eventos */}
+                  <Route path="/eventos" element={<EventoList />} />
+                  {/* Página de formulário para criar novo evento */}
+                  <Route path="/eventos/novo" element={<EventoForm />} />
+
                 </Route>
               </Route>
 

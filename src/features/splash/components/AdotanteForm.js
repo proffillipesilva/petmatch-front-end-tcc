@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // [ALTERAÇÃO] Remove useEffect
+import React, { useState } from "react";
 import { cpf } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -8,14 +8,19 @@ import AdotanteService from "../services/AdotanteService";
 import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
 import useUserStore from "../../../shared/store/UserStore";
- 
+
+// ✨ NOVO: Importe o useAuth do seu AuthContext
+import { useAuth } from "../../../shared/context/AuthContext";
+
 import Frame1 from "../assets/Frame1.png";
 
 const AdotanteForm = () => {
   const navigate = useNavigate();
-  // [ALTERAÇÃO] Não precisamos mais ler o 'token' aqui
   const { setAuthData, fcmToken } = useAuthStore();
   const { setMe } = useUserStore();
+
+  // ✨ NOVO: Pegue a função 'login' do seu AuthContext
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     nomeAdotante: "",
@@ -35,8 +40,6 @@ const AdotanteForm = () => {
   const [showSenha, setShowSenha] = useState(false);
   const [showConfirmSenha, setShowConfirmSenha] = useState(false);
 
-  // [ALTERAÇÃO] Estado 'registrationSuccess' removido. Não é mais necessário.
-
   const handleForm = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
@@ -45,14 +48,11 @@ const AdotanteForm = () => {
 
   const handleBack = () => navigate(-1);
 
-  // [ALTERAÇÃO] useEffect de navegação removido.
-
   const enviaServidor = async (e) => {
     e.preventDefault();
     const tempErrors = {};
 
-    // ... (Todas as suas validações de formulário continuam aqui) ...
-    // Validações básicas
+    // --- Lógica de Validação de Erros ---
     if (!form.nomeAdotante) tempErrors.nomeAdotante = "O nome é obrigatório!";
     if (!form.cpfAdotante) tempErrors.cpfAdotante = "O CPF é obrigatório!";
     else if (!cpf.isValid(form.cpfAdotante)) tempErrors.cpfAdotante = "CPF inválido!";
@@ -75,13 +75,12 @@ const AdotanteForm = () => {
     else if (form.senha !== form.confirmSenha)
       tempErrors.confirmSenha = "As senhas não coincidem!";
     if (!form.termos) tempErrors.termos = "Você deve aceitar os termos de uso!";
+    // ------------------------------------------------
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
       return;
     }
-    // ... (Fim das validações) ...
-
 
     try {
       setLoading(true);
@@ -98,32 +97,51 @@ const AdotanteForm = () => {
       };
 
       console.log("Enviando requisição de registro de adotante...");
+      // 1. CHAMA O REGISTRO
       const registerResponse = await AdotanteService.registerAdotante(payload);
       const receivedToken = registerResponse.token;
 
       if (!receivedToken) throw new Error("Token não recebido após o registro.");
 
-      localStorage.setItem("accessToken", receivedToken);
+      // ❌ REMOVIDO: O 'AuthContext' vai cuidar disso.
+      // localStorage.setItem("accessToken", receivedToken);
+      
       const decodedUser = jwtDecode(receivedToken);
       
-      // 1. Apenas atualiza o store de autenticação
+      // 2. SALVA O TOKEN NO STORE (para o interceptor funcionar)
+      console.log("Token recebido, salvando no AuthStore...");
       setAuthData(receivedToken, decodedUser);
+      console.log("Token salvo no AuthStore.");
 
-      if (fcmToken) await LoginService.sendToken({ fcmToken });
+      // 3. ENVIA O TOKEN FCM (agora vai funcionar)
+      if (fcmToken) {
+        console.log("Enviando token FCM...");
+        await LoginService.sendToken({ fcmToken });
+      }
 
+      // 4. BUSCA O USUÁRIO COMPLETO (agora vai funcionar)
       console.log("Buscando informações completas do usuário (/me)...");
       const userInfo = await LoginService.me();
-      
-      // 2. Apenas atualiza o store do usuário
-      setMe(userInfo.tipo, userInfo);
+      console.log("Usuário completo buscado:", userInfo.nome);
 
-      // [ALTERAÇÃO] Todas as lógicas de navegação e 'registrationSuccess' foram removidas.
-      // O PublicRoute vai cuidar do redirecionamento agora.
+      // ❌ REMOVIDO: O 'AuthContext' vai cuidar disso.
+      // setMe(userInfo.tipo, userInfo);
+
+      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
+      // 5. CHAMA O LOGIN DO CONTEXTO
+      // Esta função fará TUDO:
+      // 1. Salvar no Context
+      // 2. Salvar no LocalStorage (chaves 'user' e 'token')
+      // 3. Salvar nos stores Zustand (auth-storage e user-storage)
+      // 4. Redirecionar para a /adotante-home
+      console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
+      login(userInfo, receivedToken);
 
     } catch (err) {
       console.error("Erro ao cadastrar:", err);
+      // Limpa o token se o fluxo pós-registro falhar
+      setAuthData(null, null);
 
-      // ... (Seu tratamento de erros continua aqui) ...
       const backendMessage = err.response?.data?.message?.toLowerCase() || "";
       const statusCode = err.response?.status;
       console.log("Status recebido:", statusCode);
@@ -175,7 +193,6 @@ const AdotanteForm = () => {
   };
 
   const renderInput = (id, label, type = "text") => (
-    // ... (seu JSX para renderInput) ...
     <div className="mb-3.5">
       <label htmlFor={id} className="block text-black font-medium text-sm">
         {label}:
@@ -196,7 +213,6 @@ const AdotanteForm = () => {
   );
 
   return (
-    // ... (Seu JSX de retorno completo) ...
     <div className="w-full flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <button
         onClick={handleBack}
@@ -267,7 +283,7 @@ const AdotanteForm = () => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.OSpx] ${
+              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${
                 errors.confirmSenha ? "border-red-500" : "border-white/80"
               } bg-white/95 text-black`}
             />

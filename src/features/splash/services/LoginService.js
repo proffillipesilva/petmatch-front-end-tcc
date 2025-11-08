@@ -1,4 +1,6 @@
 import api from "../../../shared/utils/api";
+// ✨ CORREÇÃO: Importar também o publicApi
+import publicApi from "../../../shared/utils/publicApi"; 
 
 /**
  * Serviço de API para operações de Autenticação (Login e Registro).
@@ -12,7 +14,8 @@ const LoginService = {
    */
   async register(registerData) {
     try {
-      const response = await api.post('/v1/api/auth/register', registerData);
+      // ✨ CORREÇÃO: Usar 'publicApi' para registro
+      const response = await publicApi.post('/v1/api/auth/register', registerData);
       return response.data;
     } catch (error) {
       console.error('Erro no registro:', error.response || error);
@@ -35,7 +38,8 @@ const LoginService = {
    */
   async login(loginData) {
     try {
-      const response = await api.post('/v1/api/auth/login', loginData);
+      // ✨ CORREÇÃO: Usar 'publicApi' para login
+      const response = await publicApi.post('/v1/api/auth/login', loginData);
       return response.data;
     } catch (error) {
       console.error('Erro no login:', error.response || error);
@@ -53,6 +57,7 @@ const LoginService = {
 
   /**
    * Obtém os dados do usuário autenticado ('me').
+   * Esta função ESTÁ CORRETA usando 'api' pois é uma rota protegida.
    * @returns {Promise<object>} - Uma Promise que resolve para os dados completos do usuário logado.
    */
   async me() {
@@ -68,6 +73,7 @@ const LoginService = {
 
   /**
    * Envia o token de notificação (FCM ou similar) do dispositivo do usuário.
+   * Esta função ESTÁ CORRETA usando 'api' pois é uma rota protegida.
    * @param {object} tokenData - O token do dispositivo (e.g., { token: string }).
    * @returns {Promise<object>} - Uma Promise que resolve para a resposta da API.
    */

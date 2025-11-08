@@ -9,7 +9,7 @@ import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
 import useUserStore from "../../../shared/store/UserStore";
 
-// ✨ NOVO: Importe o useAuth do seu AuthContext
+// Importe o useAuth do seu AuthContext
 import { useAuth } from "../../../shared/context/AuthContext";
 
 import Frame1 from "../assets/Frame1.png";
@@ -19,7 +19,7 @@ const OngForm = () => {
   const { setAuthData, fcmToken } = useAuthStore();
   const { setMe } = useUserStore();
 
-  // ✨ NOVO: Pegue a função 'login' do seu AuthContext
+  // Pegue a função 'login' do seu AuthContext
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -75,7 +75,7 @@ const OngForm = () => {
       tempErrors.celular = "O celular da ONG é obrigatório!";
 
     const senhaRegex = /^(?=.*[A-Za-z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
+    if (!form.senha) tempErrors.senha = "A senha é obrigária!";
     else if (!senhaRegex.test(form.senha))
       tempErrors.senha =
         "A senha deve ter no mínimo 8 caracteres e conter letras e pelo menos um caractere especial (@, #, !, etc).";
@@ -106,35 +106,46 @@ const OngForm = () => {
       };
 
       console.log("Enviando requisição de registro de ONG...");
+      // 1. CHAMA O REGISTRO (assumindo que OngService usa publicApi)
       const registerResponse = await OngService.registerOng(payload);
       const receivedToken = registerResponse.token;
 
       if (!receivedToken)
         throw new Error("Token não recebido após o registro.");
 
-      // ❌ REMOVIDO: `login` (do AuthContext) já faz isso.
-      // localStorage.setItem("accessToken", receivedToken);
-      // const decodedUser = jwtDecode(receivedToken);
-      // setAuthData(receivedToken, decodedUser);
+      // ✨✨✨ INÍCIO DA CORREÇÃO ✨✨✨
+      // 2. SALVA O TOKEN NO STORE IMEDIATAMENTE
+      // Isso é crucial para que o interceptador 'api.js' o encontre
+      // nas próximas chamadas (`sendToken` e `me`).
+      console.log("Token recebido, salvando no AuthStore...");
+      const decodedUser = jwtDecode(receivedToken);
+      setAuthData(receivedToken, decodedUser);
+      console.log("Token salvo no AuthStore.");
+      // ✨✨✨ FIM DA CORREÇÃO ✨✨✨
 
-      if (fcmToken) await LoginService.sendToken({ fcmToken });
+      // 3. AGORA a chamada 'sendToken' vai funcionar
+      if (fcmToken) {
+        console.log("Enviando token FCM...");
+        await LoginService.sendToken({ fcmToken });
+      }
 
+      // 4. AGORA a chamada 'me' vai funcionar
       console.log("Buscando informações completas do usuário (/me)...");
       const userInfo = await LoginService.me();
+      console.log("Usuário completo buscado:", userInfo.nome);
 
-      // ❌ REMOVIDO: `login` (do AuthContext) já faz isso.
-      // setMe(userInfo.tipo, userInfo);
-
-      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
-      // Esta função (do AuthContext) fará TUDO:
-      // 1. Salvar no Context
-      // 2. Salvar no LocalStorage (chaves 'user' e 'token')
-      // 3. Salvar nos stores Zustand (auth-storage e user-storage)
-      // 4. Redirecionar para a /ong-home
+      // 5. CHAMA O LOGIN DO CONTEXTO
+      // Esta função agora vai:
+      // - Salvar o userInfo *completo* no Context e no localStorage
+      // - Salvar o userInfo *completo* no UserStore
+      // - Redirecionar para a /ong-home
+      console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
       login(userInfo, receivedToken);
       
     } catch (err) {
       console.error("Erro ao cadastrar:", err);
+      // Limpa o token se o fluxo pós-registro falhar (ex: /me falhou)
+      setAuthData(null, null);
 
       const backendMessage = err.response?.data?.message?.toLowerCase() || "";
       const statusCode = err.response?.status;

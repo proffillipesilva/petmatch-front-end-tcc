@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import publicApi from "../../../shared/utils/publicApi";
 import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
-import useUserStore from "../../../shared/store/UserStore";
+// import useUserStore from "../../../shared/store/UserStore"; // Removido (login() cuida disso)
 import Frame1 from "../assets/Frame1.png";
 
 // Importe o useAuth do seu AuthContext
@@ -23,7 +23,7 @@ const LoginScreen = () => {
 
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
-  const { setMe } = useUserStore();
+  // const { setMe } = useUserStore(); // Removido
 
   // Pegue a função 'login' do seu AuthContext
   const { login } = useAuth();
@@ -45,6 +45,8 @@ const LoginScreen = () => {
   // 🔹 Login com e-mail e senha
   const handleLogin = async (e) => {
     e.preventDefault();
+    setEmailError(""); // Limpa erros antigos
+    setPasswordError(""); // Limpa erros antigos
 
     if (!form.email) {
       setEmailError("O e-mail é obrigatório!");
@@ -58,7 +60,7 @@ const LoginScreen = () => {
     try {
       setLoading(true);
 
-      // 🚀 Chama o endpoint do backend
+      // 1. Chama o endpoint de login
       const response = await publicApi.post("/v1/api/auth/login", {
         email: form.email,
         password: form.password,
@@ -67,28 +69,42 @@ const LoginScreen = () => {
       const token = response.data.token;
       if (!token) throw new Error("Token JWT não recebido do servidor.");
 
-      // 🔐 Decodifica (somente para o Zustand)
+      // ✨ 2. Decodifica o token para pegar o ID (sub)
       const decodedUser = jwtDecode(token);
+      const userIdFromToken = decodedUser.id;
+      if (!userIdFromToken) {
+          throw new Error("ID do usuário (claim 'id') não encontrado no token JWT.");
+      }
+
+      // ✨ 3. Salva o token no AuthStore IMEDIATAMENTE
+      // (Para que a chamada /me e /notifications/token funcionem)
       setAuthData(token, decodedUser);
 
-      // 🔄 Busca dados completos do usuário
-      const userInfo = await LoginService.me();
-      setMe(userInfo.tipo, userInfo); // Salva no Zustand UserStore
-
-      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
-      // Chamamos a função 'login' do AuthContext.
-      // Ela vai salvar os dados, definir isAuthenticated
-      // e REDIRECIONAR automaticamente para a home correta.
-      login(userInfo, token);
-
-      // 🔔 Envia FCM Token (notificações)
+      // 4. Envia FCM Token (notificações)
       if (fcmToken) {
         await LoginService.sendToken({ fcmToken });
       }
 
+      // 5. Busca dados completos do usuário (que vêm sem o 'id')
+      console.log("Buscando informações completas do usuário (/me)...");
+      const userInfo = await LoginService.me(); // {email, tipo, ...}
+
+      // ✨ 6. CORREÇÃO: Juntar o ID do token com os dados do /me
+      const completeUser = {
+          ...userInfo,        // (email, tipo, cnpj, etc.)
+          id: userIdFromToken // <-- Adicionamos o ID que faltava
+      };
+
+      console.log("Usuário completo (com ID mergeado):", completeUser);
+
+      // ✨ 7. Chamar o login do Contexto com o usuário COMPLETO
+      // (Isso vai salvar em todo canto e redirecionar)
+      login(completeUser, token);
+
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      alert(error.response?.data?.message || error.message);
+      // Exibe o erro no formulário em vez de um 'alert'
+      setPasswordError(error.response?.data?.message || "E-mail ou senha inválidos.");
     } finally {
       setLoading(false);
     }
@@ -121,8 +137,6 @@ const LoginScreen = () => {
         <p className="text-sm font-medium text-gray-700 mb-5">
           Digite seu e-mail e senha para continuar
         </p>
-
-        {/* ❌ REMOVIDO: O seletor de tipo de login foi removido. */}
 
         {/* Formulário */}
         <form onSubmit={handleLogin} className="w-full text-left">

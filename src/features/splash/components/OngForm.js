@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import OngService from "../services/OngService";
 import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
-import useUserStore from "../../../shared/store/UserStore";
+// import useUserStore from "../../../shared/store/UserStore"; // Removido
 
 // Importe o useAuth do seu AuthContext
 import { useAuth } from "../../../shared/context/AuthContext";
@@ -17,7 +17,7 @@ import Frame1 from "../assets/Frame1.png";
 const OngForm = () => {
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
-  const { setMe } = useUserStore();
+  // const { setMe } = useUserStore(); // Removido
 
   // Pegue a função 'login' do seu AuthContext
   const { login } = useAuth();
@@ -75,7 +75,7 @@ const OngForm = () => {
       tempErrors.celular = "O celular da ONG é obrigatório!";
 
     const senhaRegex = /^(?=.*[A-Za-z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!form.senha) tempErrors.senha = "A senha é obrigária!";
+    if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
     else if (!senhaRegex.test(form.senha))
       tempErrors.senha =
         "A senha deve ter no mínimo 8 caracteres e conter letras e pelo menos um caractere especial (@, #, !, etc).";
@@ -106,41 +106,47 @@ const OngForm = () => {
       };
 
       console.log("Enviando requisição de registro de ONG...");
-      // 1. CHAMA O REGISTRO (assumindo que OngService usa publicApi)
+      // 1. CHAMA O REGISTRO
       const registerResponse = await OngService.registerOng(payload);
       const receivedToken = registerResponse.token;
 
       if (!receivedToken)
         throw new Error("Token não recebido após o registro.");
 
-      // ✨✨✨ INÍCIO DA CORREÇÃO ✨✨✨
-      // 2. SALVA O TOKEN NO STORE IMEDIATAMENTE
-      // Isso é crucial para que o interceptador 'api.js' o encontre
-      // nas próximas chamadas (`sendToken` e `me`).
-      console.log("Token recebido, salvando no AuthStore...");
+      // ✨ 2. Decodificar o token para pegar o payload e o ID (subject)
       const decodedUser = jwtDecode(receivedToken);
+      const userIdFromToken = decodedUser.sub; // Assumindo que o ID está no 'sub'
+
+      if (!userIdFromToken) {
+          throw new Error("ID do usuário (sub) não encontrado no token JWT.");
+      }
+
+      // ✨ 3. Salvar o token no AuthStore IMEDIATAMENTE
+      console.log("Token recebido, salvando no AuthStore...");
       setAuthData(receivedToken, decodedUser);
       console.log("Token salvo no AuthStore.");
-      // ✨✨✨ FIM DA CORREÇÃO ✨✨✨
-
-      // 3. AGORA a chamada 'sendToken' vai funcionar
+      
+      // 4. Enviar token FCM (agora funciona)
       if (fcmToken) {
         console.log("Enviando token FCM...");
         await LoginService.sendToken({ fcmToken });
       }
 
-      // 4. AGORA a chamada 'me' vai funcionar
+      // 5. Buscar o resto dos dados do usuário (que vêm SEM o ID)
       console.log("Buscando informações completas do usuário (/me)...");
-      const userInfo = await LoginService.me();
-      console.log("Usuário completo buscado:", userInfo.nome);
+      const userInfo = await LoginService.me(); // {email, cnpj, tipo}
 
-      // 5. CHAMA O LOGIN DO CONTEXTO
-      // Esta função agora vai:
-      // - Salvar o userInfo *completo* no Context e no localStorage
-      // - Salvar o userInfo *completo* no UserStore
-      // - Redirecionar para a /ong-home
+      // ✨ 6. CORREÇÃO: Juntar o ID do token com os dados do /me
+      const completeUser = {
+          ...userInfo,       // (email, cnpj, tipo, etc.)
+          id: userIdFromToken // <-- Adicionar o ID que faltava
+      };
+      
+      console.log("Usuário completo (com ID mergeado):", completeUser);
+
+      // ✨ 7. Chamar o login do Contexto com o usuário COMPLETO
       console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
-      login(userInfo, receivedToken);
+      login(completeUser, receivedToken); // <-- Passando 'completeUser'
       
     } catch (err) {
       console.error("Erro ao cadastrar:", err);

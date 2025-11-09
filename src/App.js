@@ -18,14 +18,15 @@ import StatusModal from './shared/components/StatusModal';
 import { Toaster } from 'react-hot-toast';
 import { requestForToken, onMessageListener } from './firebase';
 import useAuthStore from './shared/store/AuthStore';
-
 import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
+import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
+import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
 
-// --- NOVOS IMPORTES ---
-// (Caminho atualizado para onde você moveu os arquivos)
-import EventoList from './features/splash/components/EventoList';
-import EventoForm from './features/splash/components/EventoForm';
+// 3. MANTEMOS O SEU FORMULÁRIO (que estava correto, mas talvez o caminho mude)
+// Se você moveu ele para 'features/eventos', ajuste o caminho aqui:
+import EventoForm from './features/eventos/components/EventoForm';
+// ou: import EventoForm from './features/eventos/components/EventoForm';
 
 import './index.css';
 
@@ -76,11 +77,16 @@ function App() {
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
                   
-                  {/* === NOVAS ROTAS DE EVENTOS === */}
-                  {/* Página de listagem de eventos */}
-                  <Route path="/eventos" element={<EventoList />} />
-                  {/* Página de formulário para criar novo evento */}
+                  {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
+
+                  {/* 1. A Lista (Substitui EventoList por EventosPage) */}
+                  <Route path="/eventos" element={<EventosPage />} />
+                  
+                  {/* 2. O Formulário (Já estava correto) */}
                   <Route path="/eventos/novo" element={<EventoForm />} />
+
+                  {/* 3. A Página de Detalhes (A nova rota que faltava) */}
+                  <Route path="/eventos/:id" element={<EventoPage />} />
 
                 </Route>
               </Route>

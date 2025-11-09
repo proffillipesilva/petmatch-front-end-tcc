@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom'; // ✅ Import necessário
 import AuthImg from '../../features/splash/assets/Auth.png';
 import Frame1 from "../../features/splash/assets/Frame1.png";
-import PetCard from '../../shared/components/PetCard';
-import AddPetCard from '../../shared/components/AddPetCard';
+import PetCard from '../animais/PetCard';
+import AddPetCard from '../animais/AddPetCard';
 import { useAuth } from '../../shared/context/AuthContext';
 
 const petsMock = [

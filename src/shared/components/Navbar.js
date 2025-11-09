@@ -92,8 +92,11 @@ const Navbar = () => {
         </button>
       </li>
 
-      {/* --- NOVO BOTÃO DE EVENTOS (Aparece se estiver logado) --- */}
-      {isAuthenticated && (
+      {/* --- ✨✨ CORREÇÃO AQUI ✨✨ --- */}
+      {/* Agora este botão só aparece se o usuário estiver autenticado,
+        o objeto 'user' existir, E o 'user.tipo' for "ONG".
+      */}
+      {isAuthenticated && user && (
         <li>
           <button 
             onClick={() => handleNavigate("/eventos")} 

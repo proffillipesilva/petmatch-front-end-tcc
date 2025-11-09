@@ -7,9 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import AdotanteService from "../services/AdotanteService";
 import LoginService from "../services/LoginService";
 import useAuthStore from "../../../shared/store/AuthStore";
-import useUserStore from "../../../shared/store/UserStore";
-
-// ✨ NOVO: Importe o useAuth do seu AuthContext
+// import useUserStore from "../../../shared/store/UserStore"; // Removido
 import { useAuth } from "../../../shared/context/AuthContext";
 
 import Frame1 from "../assets/Frame1.png";
@@ -17,9 +15,7 @@ import Frame1 from "../assets/Frame1.png";
 const AdotanteForm = () => {
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
-  const { setMe } = useUserStore();
-
-  // ✨ NOVO: Pegue a função 'login' do seu AuthContext
+  // const { setMe } = useUserStore(); // Removido
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -103,44 +99,44 @@ const AdotanteForm = () => {
 
       if (!receivedToken) throw new Error("Token não recebido após o registro.");
 
-      // ❌ REMOVIDO: O 'AuthContext' vai cuidar disso.
-      // localStorage.setItem("accessToken", receivedToken);
-      
+      // ✨ 2. Decodificar o token para pegar o payload e o ID (subject)
       const decodedUser = jwtDecode(receivedToken);
-      
-      // 2. SALVA O TOKEN NO STORE (para o interceptor funcionar)
+      const userIdFromToken = decodedUser.sub; // Assumindo que o ID está no 'sub'
+
+      if (!userIdFromToken) {
+          throw new Error("ID do usuário (sub) não encontrado no token JWT.");
+      }
+
+      // ✨ 3. Salvar o token no AuthStore IMEDIATAMENTE
       console.log("Token recebido, salvando no AuthStore...");
       setAuthData(receivedToken, decodedUser);
       console.log("Token salvo no AuthStore.");
 
-      // 3. ENVIA O TOKEN FCM (agora vai funcionar)
+      // 4. Enviar token FCM (agora funciona)
       if (fcmToken) {
         console.log("Enviando token FCM...");
         await LoginService.sendToken({ fcmToken });
       }
 
-      // 4. BUSCA O USUÁRIO COMPLETO (agora vai funcionar)
+      // 5. Buscar o resto dos dados do usuário (que vêm SEM o ID)
       console.log("Buscando informações completas do usuário (/me)...");
-      const userInfo = await LoginService.me();
-      console.log("Usuário completo buscado:", userInfo.nome);
+      const userInfo = await LoginService.me(); // {email, cpf, tipo}
 
-      // ❌ REMOVIDO: O 'AuthContext' vai cuidar disso.
-      // setMe(userInfo.tipo, userInfo);
+      // ✨ 6. CORREÇÃO: Juntar o ID do token com os dados do /me
+      const completeUser = {
+          ...userInfo,       // (email, cpf, tipo, etc.)
+          id: userIdFromToken // <-- Adicionar o ID que faltava
+      };
 
-      // ✨✨ A MÁGICA ACONTECE AQUI ✨✨
-      // 5. CHAMA O LOGIN DO CONTEXTO
-      // Esta função fará TUDO:
-      // 1. Salvar no Context
-      // 2. Salvar no LocalStorage (chaves 'user' e 'token')
-      // 3. Salvar nos stores Zustand (auth-storage e user-storage)
-      // 4. Redirecionar para a /adotante-home
+      console.log("Usuário completo (com ID mergeado):", completeUser);
+
+      // ✨ 7. Chamar o login do Contexto com o usuário COMPLETO
       console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
-      login(userInfo, receivedToken);
+      login(completeUser, receivedToken); // <-- Passando 'completeUser'
 
     } catch (err) {
       console.error("Erro ao cadastrar:", err);
-      // Limpa o token se o fluxo pós-registro falhar
-      setAuthData(null, null);
+      setAuthData(null, null); // Limpa o token em caso de falha
 
       const backendMessage = err.response?.data?.message?.toLowerCase() || "";
       const statusCode = err.response?.status;

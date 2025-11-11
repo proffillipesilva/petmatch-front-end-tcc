@@ -83,10 +83,10 @@ function App() {
                   <Route path="/eventos" element={<EventosPage />} />
                   
                   {/* 2. O Formulário (Já estava correto) */}
-                  <Route path="/eventos/novo" element={<EventoForm />} />
+                  <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
 
                   {/* 3. A Página de Detalhes (A nova rota que faltava) */}
-                  <Route path="/eventos/:id" element={<EventoPage />} />
+                  <Route path="/eventos/:id" element={<SplashScreen><EventoPage /></SplashScreen>} />
 
                 </Route>
               </Route>

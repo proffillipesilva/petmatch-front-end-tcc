@@ -1,67 +1,37 @@
-// --- ⚠️ 1. ADICIONE 'useEffect' NA IMPORTAÇÃO ---
+// --- 1. IMPORTAÇÕES SIMPLIFICADAS ---
+// Removemos DatePicker, format, ptBR e o CSS!
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import EventoService from "../services/EventoService";
-// (Lembre-se que você corrigiu este caminho)
 import Frame1 from "../../splash/assets/Frame1.png";
-
-// Importar o useAuth (caminho baseado no seu EventoForm.js antigo)
 import { useAuth } from "../../../shared/context/AuthContext";
-
-/**
- * Converte uma string de data/hora do formato "dd/MM/yyyy HH:mm"
- * para o formato ISO "yyyy-MM-ddTHH:mm".
- * @param {string} dateTimeString - A data no formato "dd/MM/yyyy HH:mm".
- * @returns {string|null} A data no formato "yyyy-MM-ddTHH:mm" ou null se o formato for inválido.
- */
-function parseBrazilianDateTime(dateTimeString) {
-  if (!dateTimeString) return null;
-  // ... (resto da sua função)
-  const parts = dateTimeString.split(" ");
-  if (parts.length !== 2) return null;
-  const dateParts = parts[0].split("/");
-  if (dateParts.length !== 3) return null;
-  const timeParts = parts[1].split(":");
-  if (timeParts.length !== 2) return null;
-  const [day, month, year] = dateParts;
-  const [hour, minute] = timeParts;
-  if (
-    year.length !== 4 ||
-    month.length !== 2 ||
-    day.length !== 2 ||
-    hour.length !== 2 ||
-    minute.length !== 2
-  ) {
-    return null;
-  }
-  return `${year}-${month}-${day}T${hour}:${minute}`;
-}
 
 const EventoForm = () => {
   const navigate = useNavigate();
-  // (Seu context usa 'user.tipo')
   const { user } = useAuth();
 
-  // --- ⚠️ 2. ADICIONE ESTE BLOCO DE CÓDIGO ---
-  // Este hook verifica a permissão assim que o componente carrega
+  // --- O useEffect do ResizeObserver FOI REMOVIDO (não é mais necessário) ---
+
+  // --- LÓGICA DE PERMISSÃO (continua igual) ---
   useEffect(() => {
-    // Se o usuário estiver carregado E não for uma ONG
     if (user && user.tipo !== "ONG") {
       console.warn("Acesso negado: Rota apenas para ONGs.");
-      navigate("/eventos"); // Envia o Adotante de volta para a lista
+      navigate("/eventos");
     }
-  }, [user, navigate]); // Roda sempre que 'user' ou 'navigate' mudarem
-  // --- FIM DO BLOCO ---
+  }, [user, navigate]);
 
+  // --- 4. ESTADO SIMPLIFICADO ---
+  // A data/hora agora é só uma string no formulário
   const [form, setForm] = useState({
     nome: "",
-    dataHora: "",
     endereco: "",
+    dataHora: "", // <-- O input nativo usa uma string "yyyy-MM-ddTHH:mm"
   });
-
   const [errors, setErrors] = useState({});
 
+  // --- 5. HANDLER ÚNICO (SIMPLIFICADO) ---
+  // Este handler agora cuida de TODOS os campos, inclusive o de data/hora
   const handleForm = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -70,27 +40,22 @@ const EventoForm = () => {
 
   const handleBack = () => navigate(-1);
 
+  // --- 6. FUNÇÃO DE ENVIO (MUITO MAIS SIMPLES) ---
   const enviaServidor = async (e) => {
     e.preventDefault();
     setErrors({});
     const tempErrors = {};
 
+    // Validação
     if (!form.nome) tempErrors.nome = "O nome do evento é obrigatório!";
-    if (!form.dataHora) tempErrors.dataHora = "A data e hora são obrigatórias!";
     if (!form.endereco) tempErrors.endereco = "O endereço é obrigatório!";
-
-    const isoCompliantDateTime = parseBrazilianDateTime(form.dataHora);
-
-    if (!isoCompliantDateTime && form.dataHora) {
-      tempErrors.dataHora = "Formato de data inválido. Use dd/MM/yyyy HH:mm";
-    }
+    if (!form.dataHora) tempErrors.dataHora = "A data e hora são obrigatórias!";
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
       return;
     }
 
-    // (Sua lógica de 'user.id' para 'idOng' estava correta)
     if (!user || !user.id) {
       console.error("Erro: ID do usuário ONG não encontrado.");
       setErrors({ geral: "Erro de autenticação, faça login novamente." });
@@ -98,22 +63,22 @@ const EventoForm = () => {
     }
 
     try {
-      const localDate = new Date(isoCompliantDateTime);
-      const dataHoraISO_UTC = localDate.toISOString();
+      // ** AQUI ESTÁ A MÁGICA **
+      // O valor de 'form.dataHora' já é "2025-11-10T20:30".
+      // Só precisamos adicionar os segundos (":00") que o backend espera.
+      const dataHoraLocalString = `${form.dataHora}:00`;
 
       const payload = {
         nome: form.nome,
-        dataHora: dataHoraISO_UTC,
+        dataHora: dataHoraLocalString, // <-- Perfeito!
         endereco: form.endereco,
         idOng: user.id,
       };
 
       console.log("Enviando payload para criar evento:", payload);
-
-      // (Lembre-se que seu service chama 'criarEvento')
       await EventoService.criarEvento(payload);
-
       navigate("/eventos");
+
     } catch (err) {
       console.error("Falha ao cadastrar evento:", err);
       setErrors({
@@ -122,7 +87,8 @@ const EventoForm = () => {
     }
   };
 
-  const renderInput = (id, label, type = "text") => (
+  // Função para renderizar inputs de TEXTO (igual)
+  const renderInput = (id, label) => (
     <div className="mb-3.5">
       <label htmlFor={id} className="block text-black font-medium text-sm">
         {label}:
@@ -130,14 +96,10 @@ const EventoForm = () => {
       <input
         id={id}
         name={id}
-        type={id === "dataHora" ? "text" : type}
+        type="text"
         value={form[id]}
         onChange={handleForm}
-        placeholder={
-          id === "dataHora"
-            ? "dd/MM/yyyy HH:mm"
-            : `Digite ${label.toLowerCase()}`
-        }
+        placeholder={`Digite ${label.toLowerCase()}`}
         className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${
           errors[id] ? "border-red-500" : "border-white/80"
         } bg-white/95 text-black`}
@@ -146,13 +108,11 @@ const EventoForm = () => {
     </div>
   );
 
-  // --- ⚠️ 3. ADICIONE ESTA VERIFICAÇÃO ---
-  // Impede que o formulário apareça rapidamente antes do redirecionamento
   if (!user || user.tipo !== "ONG") {
-    return null; // Ou um <Spinner /> se preferir
+    return null;
   }
-  // --- FIM DA VERIFICAÇÃO ---
 
+  // --- 7. RENDERIZAÇÃO DO COMPONENTE (JSX) ---
   return (
     <div className="w-full flex flex-col items-center justify-center min-h-screen p-5 sm:p-20 md:p-10 text-[#333]">
       <button
@@ -175,7 +135,29 @@ const EventoForm = () => {
 
         <form onSubmit={enviaServidor} className="w-full">
           {renderInput("nome", "Nome do Evento")}
-          {renderInput("dataHora", "Data e Hora", "text")}
+
+          {/* --- O NOVO SELETOR DE DATA/HORA NATIVO --- */}
+          <div className="mb-3.5">
+            <label htmlFor="dataHora" className="block text-black font-medium text-sm">
+              Data e Hora:
+            </label>
+            <input
+              id="dataHora"
+              name="dataHora"
+              type="datetime-local" // <-- O tipo nativo do HTML5
+              value={form.dataHora}
+              onChange={handleForm}
+              // Usamos as mesmas classes para parecer o mais próximo possível
+              className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${
+                errors.dataHora ? "border-red-500" : "border-white/80"
+              } bg-white/95 text-black`}
+            />
+            {errors.dataHora && (
+              <p className="text-red-600 text-xs mt-1">{errors.dataHora}</p>
+            )}
+          </div>
+          {/* --- FIM DO NOVO SELETOR --- */}
+
           {renderInput("endereco", "Endereço")}
 
           {errors.geral && (

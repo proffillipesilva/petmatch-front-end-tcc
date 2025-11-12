@@ -65,7 +65,7 @@ const AdotanteForm = () => {
     if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
     else if (!senhaRegex.test(form.senha))
       tempErrors.senha =
-        "A senha deve ter no mínimo 8 caracteres e conter letras e pelo menos um caractere especial (@, #, !, etc).";
+        "A senha deve ter no mínimo 8 caracteres, conter letras maiúsculas e minúsculas e pelo menos um caractere especial (@, #, !, etc).";
     if (!form.confirmSenha)
       tempErrors.confirmSenha = "A confirmação da senha é obrigatória!";
     else if (form.senha !== form.confirmSenha)

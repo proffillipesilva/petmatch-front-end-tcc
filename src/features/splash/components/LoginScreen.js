@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
@@ -27,13 +26,6 @@ const LoginScreen = () => {
 
   // Pegue a função 'login' do seu AuthContext
   const { login } = useAuth();
-
-  // 🔹 Login com Google (placeholder)
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: () => alert("Login com Google ainda não implementado."),
-    onError: () => alert("Falha no login com Google."),
-  });
-
   // 🔹 Atualiza campos do formulário
   const handleForm = (e) => {
     const { name, value } = e.target;
@@ -199,23 +191,6 @@ const LoginScreen = () => {
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
-
-        {/* Divider */}
-        <div className="flex items-center my-6">
-          <hr className="flex-grow border-t border-gray-300" />
-          <span className="px-3 text-gray-600 text-sm">ou continue com</span>
-          <hr className="flex-grow border-t border-gray-300" />
-        </div>
-
-        {/* Botão Google */}
-        <button
-          onClick={() => loginWithGoogle()}
-          className="relative w-full py-2.5 rounded-3xl flex items-center justify-center bg-amber-200 hover:bg-amber-300 transition shadow-md font-medium"
-        >
-          <FcGoogle className="w-5 h-5 absolute left-4" />
-          Google
-        </button>
-
         {/* Link de cadastro */}
         <p className="mt-6 text-sm text-gray-600">
           Não tem uma conta?{" "}

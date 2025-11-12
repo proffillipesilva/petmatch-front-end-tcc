@@ -22,6 +22,10 @@ import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
 import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
 import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
+import PetsPage from './features/pet/PetsPage';
+import PetForm from './features/pet/components/PetForm';
+import PetPage from './features/pet/[id]/PetPage';
+import PetService from './features/pet/services/PetService';
 
 // 3. MANTEMOS O SEU FORMULÁRIO (que estava correto, mas talvez o caminho mude)
 // Se você moveu ele para 'features/eventos', ajuste o caminho aqui:
@@ -71,24 +75,31 @@ function App() {
                 </Route>
               </Route>
 
-              {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados) */}
+                           {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados) */}
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
                   
-                  {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
-
-                  {/* 1. A Lista (Substitui EventoList por EventosPage) */}
+                  {/* === Rotas de Eventos (Existentes) === */}
                   <Route path="/eventos" element={<EventosPage />} />
                   
-                  {/* 2. O Formulário (Já estava correto) */}
-                  <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
-
-                  {/* 3. A Página de Detalhes (A nova rota que faltava) */}
-                  <Route path="/eventos/:id" element={<SplashScreen><EventoPage /></SplashScreen>} />
+                  {/* === 🐾 NOVA ROTA DE LISTA DE PETS 🐾 === */}
+                  {/* Adicionada aqui para usar o MainLayout (Header/Footer) */}
+                  <Route path="/adotar" element={<PetsPage />} />
 
                 </Route>
+
+                {/* === Rotas de Eventos (Form/Detalhes - Sem MainLayout) === */}
+                <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
+                <Route path="/eventos/:id" element={<SplashScreen><EventoPage /></SplashScreen>} />
+
+                {/* === 🐾 NOVAS ROTAS DE PETS (FORM/DETALHAES) 🐾 === */}
+                {/* Adicionadas aqui para usar o SplashScreen (sem Header/Footer),
+                    seguindo o mesmo padrão das suas rotas de eventos. */}
+                <Route path="/adotar/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
+                <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
+                
               </Route>
 
             </Routes>

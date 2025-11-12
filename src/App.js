@@ -61,7 +61,6 @@ function App() {
               {/* GRUPO 1: ROTAS PÚBLICAS GERAIS */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/adotar" element={<AdotarScreen />} />
                 <Route path="/novidades" element={<NovidadesScreen />} />
               </Route>
 

@@ -9,10 +9,9 @@ import Home from './features/home/Home';
 import OngHome from './features/home/OngHome';
 import AdotanteHome from './features/home/AdotanteHome';
 import LoginScreen from './features/splash/components/LoginScreen';
-import TipoCadastro from './features/splash/components/TipoCadastro';
+import TipoCadastro from './features/splash/components/TipoCadastro'; 
 import AdotanteForm from './features/splash/components/AdotanteForm';
 import OngForm from './features/splash/components/OngForm';
-import AdotarScreen from './features/home/AdotarScreen';
 import NovidadesScreen from './features/home/NovidadesScreen';
 import StatusModal from './shared/components/StatusModal';
 import { Toaster } from 'react-hot-toast';
@@ -22,10 +21,11 @@ import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
 import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
 import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
-
-// 3. MANTEMOS O SEU FORMULÁRIO (que estava correto, mas talvez o caminho mude)
-// Se você moveu ele para 'features/eventos', ajuste o caminho aqui:
 import EventoForm from './features/eventos/components/EventoForm';
+
+import PetsPage from './features/pet/PetsPage';
+import PetForm from './features/pet/components/PetForm';
+import PetPage from './features/pet/[id]/PetPage';
 // ou: import EventoForm from './features/eventos/components/EventoForm';
 
 import './index.css';
@@ -57,7 +57,6 @@ function App() {
               {/* GRUPO 1: ROTAS PÚBLICAS GERAIS */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/adotar" element={<AdotarScreen />} />
                 <Route path="/novidades" element={<NovidadesScreen />} />
               </Route>
 
@@ -87,6 +86,16 @@ function App() {
 
                   {/* 3. A Página de Detalhes (A nova rota que faltava) */}
                   <Route path="/eventos/:id" element={<SplashScreen><EventoPage /></SplashScreen>} />
+                  
+
+
+                  {/* === 🐾 NOVA ROTA DE LISTA DE PETS 🐾 === */}
+                  {/* Adicionada aqui para usar o MainLayout (Header/Footer) */}
+                  <Route path="/adotar" element={<PetsPage />} />
+
+                  <Route path="/adotar/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
+
+                  <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
 
                 </Route>
               </Route>

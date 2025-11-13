@@ -14,8 +14,12 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
   const imagem = pet.imagemUrl || 'https://via.placeholder.com/400x300?text=Pet';
 
   return (
+<<<<<<< HEAD
     // ****** ⬇️ CORREÇÃO APLICADA AQUI ⬇️ ******
     <Link to={`/adotar/${pet.id}`} className="block"> {/* 🐾 Rota do Pet (era /pets/) */}
+=======
+    <Link to={`/pets/${pet.id}`} className="block"> {/* 🐾 Rota do Pet */}
+>>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
       <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden transform hover:scale-[1.02] relative">
 
         {/* Botão de deletar (lógica idêntica) */}

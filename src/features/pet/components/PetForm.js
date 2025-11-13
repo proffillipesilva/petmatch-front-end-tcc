@@ -13,7 +13,11 @@ const PetForm = () => {
   useEffect(() => {
     if (user && user.tipo !== "ONG") {
       console.warn("Acesso negado: Rota apenas para ONGs.");
+<<<<<<< HEAD
       navigate("/adotar"); // 🐾 Redireciona para a lista (Já estava correto)
+=======
+      navigate("/pets"); // 🐾 Redireciona para a lista de pets
+>>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
     }
   }, [user, navigate]);
 
@@ -73,10 +77,14 @@ const PetForm = () => {
 
       console.log("Enviando payload para criar pet:", payload);
       await PetService.criarPet(payload); // 🐾
+<<<<<<< HEAD
       
       // ****** ⬇️ CORREÇÃO APLICADA AQUI ⬇️ ******
       navigate("/adotar"); // 🐾 Volta para a lista de pets (era /pets)
       // ****** ⬆️ CORREÇÃO APLICADA AQUI ⬆️ ******
+=======
+      navigate("/pets"); // 🐾 Volta para a lista de pets
+>>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
 
     } catch (err) {
       console.error("Falha ao cadastrar pet:", err);

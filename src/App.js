@@ -21,6 +21,16 @@ import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
 import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
 import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
+<<<<<<< HEAD
+=======
+import PetForm from './features/pet/components/PetForm';
+import PetPage from './features/pet/[id]/PetPage';
+import PetService from './features/pet/services/PetService';
+import PetsPage from './features/animais/PetsPage';
+
+// 3. MANTEMOS O SEU FORMULÁRIO (que estava correto, mas talvez o caminho mude)
+// Se você moveu ele para 'features/eventos', ajuste o caminho aqui:
+>>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
 import EventoForm from './features/eventos/components/EventoForm';
 
 import PetsPage from './features/pet/PetsPage';
@@ -44,8 +54,8 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    const unsubscribe = onMessageListener().then(() => {});
-    return () => {};
+    const unsubscribe = onMessageListener().then(() => { });
+    return () => { };
   }, []);
 
   return (
@@ -63,10 +73,10 @@ function App() {
               {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados) */}
               <Route element={<PublicRoute />}>
                 <Route element={<MainLayout />}>
-                <Route path="/login" element={<SplashScreen><LoginScreen /></SplashScreen>} />
-                <Route path="/tipo-cadastro" element={<SplashScreen><TipoCadastro /></SplashScreen>} />
-                <Route path="/adotante-form" element={<SplashScreen><AdotanteForm /></SplashScreen>} />
-                <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
+                  <Route path="/login" element={<SplashScreen><LoginScreen /></SplashScreen>} />
+                  <Route path="/tipo-cadastro" element={<SplashScreen><TipoCadastro /></SplashScreen>} />
+                  <Route path="/adotante-form" element={<SplashScreen><AdotanteForm /></SplashScreen>} />
+                  <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
                 </Route>
               </Route>
 
@@ -75,12 +85,12 @@ function App() {
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
-                  
+
                   {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
 
                   {/* 1. A Lista (Substitui EventoList por EventosPage) */}
                   <Route path="/eventos" element={<EventosPage />} />
-                  
+
                   {/* 2. O Formulário (Já estava correto) */}
                   <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
 
@@ -97,9 +107,19 @@ function App() {
 
                   <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
 
-                </Route>
-              </Route>
+                  {/* === 🐾 NOVA ROTA DE LISTA DE PETS 🐾 === */}
+                  {/* Adicionada aqui para usar o MainLayout (Header/Footer) */}
+                  <Route path="/adotar" element={<PetPage />} />
 
+                </Route>
+
+                {/* === 🐾 NOVAS ROTAS DE PETS (FORM/DETALHAES) 🐾 === */}
+                {/* Adicionadas aqui para usar o SplashScreen (sem Header/Footer),
+                    seguindo o mesmo padrão das suas rotas de eventos. */}
+                <Route path="/pets/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
+                <Route path="/pets/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
+
+              </Route>
             </Routes>
           </AuthProvider>
         </Router>

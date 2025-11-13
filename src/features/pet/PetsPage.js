@@ -52,11 +52,7 @@ const PetsPage = () => {
         {/* Mostra o botão "+ Novo Pet" SÓ SE for ONG */}
         {user && user.tipo === 'ONG' && (
           <button
-<<<<<<< HEAD
             onClick={() => navigate('/adotar/novo')} // 🐾 (Já estava correto)
-=======
-            onClick={() => navigate('/pets/novo')} // 🐾
->>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
             className="flex items-center gap-2 px-5 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
           >
             <FaPlus />

@@ -20,11 +20,7 @@ const PetPage = () => {
       setPet(data); // 🐾
     }).catch(err => {
       console.error(err);
-<<<<<<< HEAD
       navigate('/adotar'); // 🐾 Se não encontrar, volta para a lista (Já estava correto)
-=======
-      navigate('/pets'); // 🐾 Se não encontrar, volta para a lista
->>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
     });
   }, [id, navigate]);
 
@@ -39,19 +35,12 @@ const PetPage = () => {
   return (
     // Estilo da página de detalhes
     <div className="p-10 max-w-4xl mx-auto bg-white shadow-xl rounded-xl mt-10">
-<<<<<<< HEAD
       {/* ****** ⬇️ CORREÇÃO APLasdasasdasdadICADA AQUI ⬇️ ****** */}
       <button 
         onClick={() => navigate('/adotar')} // 🐾 Volta para a lista (era /pets)
         className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
       >
       {/* ****** ⬆️ CORREÇÃO APLICADA AQUI ⬆️ ****** */}
-=======
-      <button 
-        onClick={() => navigate('/pets')} // 🐾 Volta para a lista
-        className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
-      >
->>>>>>> 29efca2fde73e0a003e8a57d4913bed88a847845
         <FaArrowLeft />
         Voltar para os Pets
       </button>

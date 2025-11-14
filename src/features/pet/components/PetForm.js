@@ -20,11 +20,14 @@ const PetForm = () => {
   // Estado do formulário para Pet
   const [form, setForm] = useState({
     nome: "",
-    especie: "", // (Cachorro, Gato)
-    porte: "",   // (Pequeno, Medio, Grande)
-    idade: "",   // (Anos)
-    descricao: "",
-    imagemUrl: "", // URL da foto
+    especie: "",
+    porte: "",
+    idade: "",
+    sexo: "", // Novo Campo Obrigatório (M ou F)
+    raca: "", // Novo Campo (Opcional)
+    cor: "",  // Novo Campo (Opcional)
+    descricao: "", // Será enviado como 'observacoesAnimal'
+    imagemUrl: ""
   });
   const [errors, setErrors] = useState({});
 
@@ -43,10 +46,11 @@ const PetForm = () => {
     setErrors({});
     const tempErrors = {};
 
-    // Validação
+    // --- 2. VALIDAÇÕES ---
     if (!form.nome) tempErrors.nome = "O nome é obrigatório!";
     if (!form.especie) tempErrors.especie = "A espécie é obrigatória!";
     if (!form.porte) tempErrors.porte = "O porte é obrigatório!";
+    if (!form.sexo) tempErrors.sexo = "O sexo é obrigatório!"; // Validação nova
     if (!form.idade) tempErrors.idade = "A idade é obrigatória!";
     if (form.idade && form.idade < 0) tempErrors.idade = "Idade inválida.";
 
@@ -63,12 +67,30 @@ const PetForm = () => {
     try {
       const payload = {
         nome: form.nome,
-        especie: form.especie,
-        porte: form.porte,
-        idade: parseInt(form.idade, 10), // Garante que idade é um número
-        descricao: form.descricao,
-        imagemUrl: form.imagemUrl,
-        idOng: user.id, // ID da ONG logada
+        idade: parseInt(form.idade, 10),
+        
+        // Valores exatos exigidos pelo Java (Case Sensitive)
+        porte: form.porte,   // "Pequeno", "Médio", "Grande"
+        especie: form.especie, // "Cachorro", "Gato"
+        sexo: form.sexo,     // "M", "F"
+        
+        // Campos opcionais (Envia string vazia ou padrão se não preenchido)
+        raca: form.raca || "Não definida",
+        cor: form.cor || "Não informada",
+        
+        // Mapeamento de nome: Front(descricao) -> Back(observacoesAnimal)
+        observacoesAnimal: form.descricao,
+
+        // Objeto ONG (Estrutura aninhada)
+        ong: {
+          id: user.id
+        },
+
+        // Campos complexos que o Back pede (enviando vazio/null para não quebrar)
+        fichaMedicaAnimal: null,
+        fotosAnimais: [] 
+        // OBS: Se quiser mandar a foto, precisaria saber a estrutura do FotoAnimalDTO.
+        // Por enquanto, mandamos [] para garantir que o cadastro funcione.
       };
 
       console.log("Enviando payload para criar pet:", payload);
@@ -175,16 +197,32 @@ const PetForm = () => {
           </h2>
         </div>
 
-        <form onSubmit={enviaServidor} className="w-full">
+       <form onSubmit={enviaServidor} className="w-full">
           {renderInput("nome", "Nome do Pet")}
+          
+          {/* O Backend exige Cachorro/Gato com maiúscula */}
           {renderSelect("especie", "Espécie", ["Cachorro", "Gato"])}
+          
+          {/* O Backend exige Pequeno/Médio/Grande com acento */}
           {renderSelect("porte", "Porte", ["Pequeno", "Médio", "Grande"])}
+          
+          {/* NOVO: Campo Sexo Obrigatório (M/F) */}
+          {/* Mostra Macho/Fêmea pro usuário, mas envia M/F pro backend */}
+          {renderSelect("sexo", "Sexo", ["Macho", "Fêmea"], ["M", "F"])}
+
           {renderInput("idade", "Idade (em anos)", "number")}
-          {renderInput("imagemUrl", "URL da Foto")}
-          {renderTextarea("descricao", "Descrição")}
+          
+          {/* Campos opcionais novos */}
+          {renderInput("raca", "Raça (Opcional)")}
+          {renderInput("cor", "Cor (Opcional)")}
+
+          {/* Imagem (Apenas visual por enquanto, não será salva no back sem DTO correto) */}
+          {renderInput("imagemUrl", "URL da Foto (Opcional)")}
+          
+          {renderTextarea("descricao", "Descrição / Observações")}
 
           {errors.geral && (
-            <p className="text-red-600 text-sm text-center mt-2">
+            <p className="text-red-600 text-sm text-center mt-2 bg-red-100 p-2 rounded">
               {errors.geral}
             </p>
           )}

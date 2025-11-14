@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// --- Ícones Atualizados ---
+// --- Ícones Atualizados (Adicionei FaUserEdit) ---
 import { 
   FaHome, FaPaw, FaStar, FaUserCircle, FaSignOutAlt, 
   FaCalendarAlt, // Ícone para Eventos
   FaBars,       // Ícone para Menu Hamburger
-  FaTimes       // Ícone para Fechar Menu
+  FaTimes,       // Ícone para Fechar Menu
+  FaUserEdit    // <--- NOVO ÍCONE ADICIONADO
 } from "react-icons/fa";
 import Logo from '../../features/splash/assets/Frame1.png';
 
@@ -92,10 +93,7 @@ const Navbar = () => {
         </button>
       </li>
 
-      {/* --- ✨✨ CORREÇÃO AQUI ✨✨ --- */}
-      {/* Agora este botão só aparece se o usuário estiver autenticado,
-        o objeto 'user' existir, E o 'user.tipo' for "ONG".
-      */}
+      {/* --- Mantive a lógica original dos Eventos --- */}
       {isAuthenticated && user && (
         <li>
           <button 
@@ -135,12 +133,21 @@ const Navbar = () => {
             {menuOpen && (
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
                 {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                  >
-                    <FaSignOutAlt className="text-red-500" /> Sair
-                  </button>
+                  <>
+                    {/* --- NOVO BOTÃO: EDITAR PERFIL (Só Visual) --- */}
+                    <button
+                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                    >
+                      <FaUserEdit className="text-yellow-500" /> Editar Perfil
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                    >
+                      <FaSignOutAlt className="text-red-500" /> Sair
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button onClick={() => handleNavigate("/login")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Entrar</button>
@@ -181,6 +188,14 @@ const Navbar = () => {
                   <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
                     <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
                   </span>
+
+                  {/* --- NOVO BOTÃO: EDITAR PERFIL MOBILE (Só Visual) --- */}
+                  <button
+                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                  >
+                    <FaUserEdit className="text-yellow-500" /> Editar Perfil
+                  </button>
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"

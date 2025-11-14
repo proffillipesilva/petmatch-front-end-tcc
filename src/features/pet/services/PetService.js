@@ -13,8 +13,9 @@ import api from "../../../shared/utils/api";
  * @property {string} idOng - (UUID) O ID da ONG.
  */
 
-// Define a rota base correta, confirmada pelo AnimaisController.java
-const ROTA_API = "/v1/api/animais"; 
+// Define as rotas base corretas
+const ROTA_API = "/v1/api/animais";
+const ROTA_ADOCAO = "/v1/api/adocao"; // <-- Rota para o módulo de adoção
 
 const PetService = {
   /**
@@ -23,7 +24,7 @@ const PetService = {
   async getPets() {
     try {
       // Rota corrigida (mapeia para @GetMapping em AnimaisController)
-      const response = await api.get(ROTA_API); 
+      const response = await api.get(ROTA_API);
       return response.data;
     } catch (error) {
       console.error("Erro ao listar pets:", error.response?.data || error.message);
@@ -71,7 +72,25 @@ const PetService = {
       console.error("Erro ao deletar pet:", error.response?.data || error.message);
       throw error;
     }
+  },
+
+  // ****** ⬇️ NOVO MÉTODO AQUI ⬇️ ******
+  /**
+   * Registra o interesse (match) de um usuário em um animal.
+   * Chama o endpoint: POST /v1/api/adocao/animal/{animalId}/match
+   * @param {string} animalId O UUID do animal
+   */
+  async registrarInteresse(animalId) {
+    try {
+      const response = await api.post(`${ROTA_ADOCAO}/animal/${animalId}/match`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao registrar interesse:", error.response?.data || error.message);
+      // Lança o erro para que o componente possa tratá-lo
+      throw error;
+    }
   }
+  // ****** ⬆️ FIM DO NOVO MÉTODO ⬆️ ******
 };
 
 export default PetService;

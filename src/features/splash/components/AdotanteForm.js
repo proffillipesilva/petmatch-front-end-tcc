@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 import AdotanteService from "../services/AdotanteService";
-import LoginService from "../services/LoginService";
+import LoginService from "../services/LoginService"; // Importado
 import useAuthStore from "../../../shared/store/AuthStore";
 // import useUserStore from "../../../shared/store/UserStore"; // Removido
 import { useAuth } from "../../../shared/context/AuthContext";
@@ -94,68 +94,85 @@ const AdotanteForm = () => {
 
       console.log("Enviando requisição de registro de adotante...");
       // 1. CHAMA O REGISTRO
-      const registerResponse = await AdotanteService.registerAdotante(payload);
-      const receivedToken = registerResponse.token;
+      // Esta função agora SÓ cadastra. Não esperamos um token dela.
+      await AdotanteService.registerAdotante(payload);
 
-      if (!receivedToken) throw new Error("Token não recebido após o registro.");
+      console.log("Cadastro realizado com sucesso! Iniciando login automático...");
 
-      // ✨ 2. Decodificar o token para pegar o payload e o ID (subject)
+      // 2. ✨ CORREÇÃO: FAZ O LOGIN AUTOMÁTICO
+      // Agora chamamos o LoginService para obter o token
+      const loginResponse = await LoginService.login({
+        email: form.emailAdotante,
+        password: form.senha,
+      });
+
+      const receivedToken = loginResponse.token; // Pegamos o token do LOGIN
+
+      if (!receivedToken) throw new Error("Token não recebido após o LOGIN.");
+
+      // ✨ 3. Decodificar o token para pegar o payload e o ID (subject)
       const decodedUser = jwtDecode(receivedToken);
       const userIdFromToken = decodedUser.sub; // Assumindo que o ID está no 'sub'
 
       if (!userIdFromToken) {
-          throw new Error("ID do usuário (sub) não encontrado no token JWT.");
+        throw new Error("ID do usuário (sub) não encontrado no token JWT.");
       }
 
-      // ✨ 3. Salvar o token no AuthStore IMEDIATAMENTE
+      // ✨ 4. Salvar o token no AuthStore IMEDIATAMENTE
       console.log("Token recebido, salvando no AuthStore...");
       setAuthData(receivedToken, decodedUser);
       console.log("Token salvo no AuthStore.");
 
-      // 4. Enviar token FCM (agora funciona)
+      // 5. Enviar token FCM (agora funciona)
       if (fcmToken) {
         console.log("Enviando token FCM...");
         await LoginService.sendToken({ fcmToken });
       }
 
-      // 5. Buscar o resto dos dados do usuário (que vêm SEM o ID)
+      // 6. Buscar o resto dos dados do usuário (que vêm SEM o ID)
       console.log("Buscando informações completas do usuário (/me)...");
       const userInfo = await LoginService.me(); // {email, cpf, tipo}
 
-      // ✨ 6. CORREÇÃO: Juntar o ID do token com os dados do /me
+      // ✨ 7. CORREÇÃO: Juntar o ID do token com os dados do /me
       const completeUser = {
-          ...userInfo,       // (email, cpf, tipo, etc.)
-          id: userIdFromToken // <-- Adicionar o ID que faltava
+        ...userInfo, // (email, cpf, tipo, etc.)
+        id: userIdFromToken, // <-- Adicionar o ID que faltava
       };
 
       console.log("Usuário completo (com ID mergeado):", completeUser);
 
-      // ✨ 7. Chamar o login do Contexto com o usuário COMPLETO
+      // ✨ 8. Chamar o login do Contexto com o usuário COMPLETO
       console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
       login(completeUser, receivedToken); // <-- Passando 'completeUser'
 
     } catch (err) {
-      console.error("Erro ao cadastrar:", err);
+      console.error("Erro no processo de cadastro/login:", err);
       setAuthData(null, null); // Limpa o token em caso de falha
 
-      const backendMessage = err.response?.data?.message?.toLowerCase() || "";
+      const backendMessage = err.response?.data?.message?.toLowerCase() || err.message.toLowerCase();
       const statusCode = err.response?.status;
       console.log("Status recebido:", statusCode);
       console.log("Mensagem do backend:", backendMessage);
-      if (backendMessage.includes("não passaram na validação")) {
+
+      // Erro específico do novo passo de login
+      if (backendMessage.includes("token não recebido")) {
+           setErrors((prev) => ({
+             ...prev,
+             geral: "Cadastro realizado, mas o login automático falhou. Tente logar manualmente.",
+           }));
+      }
+      else if (backendMessage.includes("não passaram na validação")) {
         setErrors((prev) => ({
           ...prev,
           senha:
             "Os dados enviados não passaram na validação. Verifique se a senha possui pelo menos 8 caracteres e um símbolo especial.",
         }));
-      }
-      else if (backendMessage.includes("cpf já cadastrado")) {
+      } else if (backendMessage.includes("cpf já cadastrado")) {
         setErrors((prev) => ({
           ...prev,
           cpfAdotante: "Este CPF já está cadastrado. Tente outro.",
         }));
-      }
-      else if (
+      } else if (
         backendMessage.includes("email já cadastrado") ||
         backendMessage.includes("e-mail já cadastrado")
       ) {
@@ -163,26 +180,22 @@ const AdotanteForm = () => {
           ...prev,
           emailAdotante: "Este e-mail já está cadastrado. Tente outro.",
         }));
-      }
-      else if (statusCode === 409) {
+      } else if (statusCode === 409) {
         setErrors((prev) => ({
           ...prev,
           geral: "E-mail ou CPF já cadastrado. Tente novamente com outros dados.",
         }));
-      }
-      else if (backendMessage) {
+      } else if (backendMessage && err.response?.data?.message) {
         setErrors((prev) => ({
           ...prev,
           geral: err.response.data.message,
         }));
-      }
-      else {
+      } else {
         setErrors((prev) => ({
           ...prev,
           geral: "E-mail ou CPF já cadastrado. Tente novamente.",
         }));
       }
-
     } finally {
       setLoading(false);
     }
@@ -279,7 +292,7 @@ const AdotanteForm = () => {
               value={form.confirmSenha}
               onChange={handleForm}
               placeholder="Repita a senha"
-              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.5px] ${
+              className={`w-full text-base py-3.5 px-3 pr-10 rounded-md border-[1.e 5px] ${
                 errors.confirmSenha ? "border-red-500" : "border-white/80"
               } bg-white/95 text-black`}
             />

@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from './shared/context/AuthContext';
-
+import FilaAdocaoPage from './features/pet/adocao/FilaAdocaoPage';
 import MainLayout from './shared/components/MainLayout';
 import SplashScreen from './features/splash/SplashScreen';
 import Home from './features/home/Home';
@@ -96,6 +96,8 @@ function App() {
                   <Route path="/adotar/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
 
                   <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
+
+                  <Route path="/ong/fila-adocao" element={<FilaAdocaoPage />} />
 
               </Route>
               </Route>

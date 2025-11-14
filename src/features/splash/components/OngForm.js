@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 import OngService from "../services/OngService";
-import LoginService from "../services/LoginService";
+import LoginService from "../services/LoginService"; // Importado
 import useAuthStore from "../../../shared/store/AuthStore";
-// import useUserStore from "../../../shared/store/UserStore"; // Removido
 
 // Importe o useAuth do seu AuthContext
 import { useAuth } from "../../../shared/context/AuthContext";
@@ -17,7 +16,6 @@ import Frame1 from "../assets/Frame1.png";
 const OngForm = () => {
   const navigate = useNavigate();
   const { setAuthData, fcmToken } = useAuthStore();
-  // const { setMe } = useUserStore(); // Removido
 
   // Pegue a função 'login' do seu AuthContext
   const { login } = useAuth();
@@ -102,69 +100,89 @@ const OngForm = () => {
         endereco: form.endereco,
         telefone: form.telefone,
         celular: form.celular,
-        cnpj: form.cnpj
+        cnpj: form.cnpj,
       };
 
       console.log("Enviando requisição de registro de ONG...");
       // 1. CHAMA O REGISTRO
-      const registerResponse = await OngService.registerOng(payload);
-      const receivedToken = registerResponse.token;
+      // Esta função agora SÓ cadastra. Não esperamos um token dela.
+      await OngService.registerOng(payload);
+
+      console.log("Cadastro realizado com sucesso! Iniciando login automático...");
+
+      // 2. ✨ CORREÇÃO: FAZ O LOGIN AUTOMÁTICO
+      // Agora chamamos o LoginService para obter o token
+      // (Estou assumindo que LoginService.login existe e aceita email/password)
+      const loginResponse = await LoginService.login({
+        email: form.emailOng,
+        password: form.senha,
+      });
+
+      const receivedToken = loginResponse.token; // Pegamos o token do LOGIN
 
       if (!receivedToken)
-        throw new Error("Token não recebido após o registro.");
+        throw new Error("Token não recebido após o LOGIN.");
 
-      // ✨ 2. Decodificar o token para pegar o payload e o ID (subject)
+      // ✨ 3. Decodificar o token para pegar o payload e o ID (subject)
       const decodedUser = jwtDecode(receivedToken);
       const userIdFromToken = decodedUser.sub; // Assumindo que o ID está no 'sub'
 
       if (!userIdFromToken) {
-          throw new Error("ID do usuário (sub) não encontrado no token JWT.");
+        throw new Error("ID do usuário (sub) não encontrado no token JWT.");
       }
 
-      // ✨ 3. Salvar o token no AuthStore IMEDIATAMENTE
+      // ✨ 4. Salvar o token no AuthStore IMEDIATAMENTE
       console.log("Token recebido, salvando no AuthStore...");
       setAuthData(receivedToken, decodedUser);
       console.log("Token salvo no AuthStore.");
-      
-      // 4. Enviar token FCM (agora funciona)
+
+      // 5. Enviar token FCM (agora funciona)
       if (fcmToken) {
         console.log("Enviando token FCM...");
         await LoginService.sendToken({ fcmToken });
       }
 
-      // 5. Buscar o resto dos dados do usuário (que vêm SEM o ID)
+      // 6. Buscar o resto dos dados do usuário (que vêm SEM o ID)
       console.log("Buscando informações completas do usuário (/me)...");
       const userInfo = await LoginService.me(); // {email, cnpj, tipo}
 
-      // ✨ 6. CORREÇÃO: Juntar o ID do token com os dados do /me
+      // ✨ 7. CORREÇÃO: Juntar o ID do token com os dados do /me
       const completeUser = {
-          ...userInfo,       // (email, cnpj, tipo, etc.)
-          id: userIdFromToken // <-- Adicionar o ID que faltava
+        ...userInfo, // (email, cnpj, tipo, etc.)
+        id: userIdFromToken, // <-- Adicionar o ID que faltava
       };
-      
+
       console.log("Usuário completo (com ID mergeado):", completeUser);
 
-      // ✨ 7. Chamar o login do Contexto com o usuário COMPLETO
+      // ✨ 8. Chamar o login do Contexto com o usuário COMPLETO
       console.log("Chamando login() do AuthContext para finalizar e redirecionar...");
       login(completeUser, receivedToken); // <-- Passando 'completeUser'
-      
+
     } catch (err) {
-      console.error("Erro ao cadastrar:", err);
+      console.error("Erro no processo de cadastro/login:", err);
       // Limpa o token se o fluxo pós-registro falhar (ex: /me falhou)
       setAuthData(null, null);
 
-      const backendMessage = err.response?.data?.message?.toLowerCase() || "";
+      // Lógica de tratamento de erros (mantida como estava)
+      const backendMessage = err.response?.data?.message?.toLowerCase() || err.message.toLowerCase();
       const statusCode = err.response?.status;
       console.log("Status recebido:", statusCode);
       console.log("Mensagem do backend:", backendMessage);
-      if (backendMessage.includes("não passaram na validação")) {
+
+      // Erro específico do novo passo de login
+      if (backendMessage.includes("token não recebido")) {
+           setErrors((prev) => ({
+             ...prev,
+             geral: "Cadastro realizado, mas o login automático falhou. Tente logar manualmente.",
+           }));
+      }
+      else if (backendMessage.includes("não passaram na validação")) {
         setErrors((prev) => ({
           ...prev,
           senha:
             "Os dados enviados não passaram na validação. Verifique se a senha possui pelo menos 8 caracteres e um símbolo especial.",
         }));
-      }
-      else if (backendMessage.includes("cnpj já cadastrado")) {
+      } else if (backendMessage.includes("cnpj já cadastrado")) {
         setErrors((prev) => ({
           ...prev,
           cnpj: "Este CNPJ já está cadastrado. Tente outro.",
@@ -182,11 +200,11 @@ const OngForm = () => {
           ...prev,
           geral: "E-mail ou CNPJ já cadastrado. Tente novamente com outros dados.",
         }));
-      } else if (backendMessage) {
-        setErrors((prev) => ({
-          ...prev,
-          geral: err.response.data.message,
-        }));
+      } else if (backendMessage && err.response?.data?.message) {
+         setErrors((prev) => ({
+           ...prev,
+           geral: err.response.data.message,
+         }));
       } else {
         setErrors((prev) => ({
           ...prev,

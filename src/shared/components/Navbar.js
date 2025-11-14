@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// --- Ícones Atualizados ---
+// --- Ícones Atualizados (Adicionado FaUserEdit) ---
 import { 
   FaHome, FaPaw, FaStar, FaUserCircle, FaSignOutAlt, 
   FaCalendarAlt, // Ícone para Eventos
   FaBars,       // Ícone para Menu Hamburger
-  FaTimes       // Ícone para Fechar Menu
+  FaTimes,      // Ícone para Fechar Menu
+  FaUserEdit    // <--- ADICIONADO
 } from "react-icons/fa";
 import Logo from '../../features/splash/assets/Frame1.png';
 
@@ -96,7 +97,7 @@ const Navbar = () => {
       {/* Agora este botão só aparece se o usuário estiver autenticado,
         o objeto 'user' existir, E o 'user.tipo' for "ONG".
       */}
-      {isAuthenticated && user && (
+      {isAuthenticated && user && user.tipo === "ONG" && ( // <--- LÓGICA CORRIGIDA
         <li>
           <button 
             onClick={() => handleNavigate("/eventos")} 
@@ -120,7 +121,7 @@ const Navbar = () => {
         </div>
 
         {/* === MENU DESKTOP ===
-             (Escondido em mobile 'hidden', aparece em telas 'md' ou maiores) */}
+            (Escondido em mobile 'hidden', aparece em telas 'md' ou maiores) */}
         <div className="hidden md:flex items-center space-x-6">
           <ul className="flex items-center space-x-4">
             <NavLinks />
@@ -135,12 +136,22 @@ const Navbar = () => {
             {menuOpen && (
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
                 {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                  >
-                    <FaSignOutAlt className="text-red-500" /> Sair
-                  </button>
+                  <>
+                    {/* --- ✨✨ BOTÃO DE PERFIL ADICIONADO (DESKTOP) ✨✨ --- */}
+                    <button
+                      onClick={() => handleNavigate("/editar-perfil")}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                    >
+                      <FaUserEdit className="text-yellow-500" /> Editar Perfil
+                    </button>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                    >
+                      <FaSignOutAlt className="text-red-500" /> Sair
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button onClick={() => handleNavigate("/login")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Entrar</button>
@@ -153,7 +164,7 @@ const Navbar = () => {
         </div>
 
         {/* === BOTÃO HAMBURGER (MOBILE) ===
-             (Aparece em mobile, escondido 'md:hidden' em telas maiores) */}
+            (Aparece em mobile, escondido 'md:hidden' em telas maiores) */}
         <div className="md:hidden flex items-center">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
@@ -164,7 +175,7 @@ const Navbar = () => {
         </div>
 
         {/* === MENU MOBILE DROPDOWN ===
-             (Aparece abaixo se 'isMobileMenuOpen' for true, apenas em mobile) */}
+            (Aparece abaixo se 'isMobileMenuOpen' for true, apenas em mobile) */}
         {isMobileMenuOpen && (
           <div className="md:hidden w-full mt-4 flex flex-col">
             {/* Links de Navegação Mobile */}
@@ -181,6 +192,15 @@ const Navbar = () => {
                   <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
                     <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
                   </span>
+
+                  {/* --- ✨✨ BOTÃO DE PERFIL ADICIONADO (MOBILE) ✨✨ --- */}
+                  <button
+                    onClick={() => handleNavigate("/editar-perfil")}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                  >
+                    <FaUserEdit className="text-yellow-500" /> Editar Perfil
+                  </button>
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"

@@ -22,13 +22,14 @@ import PrivateRoute from './shared/components/PrivateRoute';
 import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
 import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
 import EventoForm from './features/eventos/components/EventoForm';
-
+import AdminUploadScreen from './features/splash/components/AdminUploadScreen';
 import PetsPage from './features/pet/PetsPage';
 import PetForm from './features/pet/components/PetForm';
 import PetPage from './features/pet/[id]/PetPage';
 // ou: import EventoForm from './features/eventos/components/EventoForm';
 
 import './index.css';
+import AdminRoute from './shared/components/AdminRoute';
 
 function App() {
   const [token, setToken] = React.useState(null);
@@ -98,9 +99,17 @@ function App() {
                   <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
 
                   <Route path="/ong/fila-adocao" element={<FilaAdocaoPage />} />
-
+                  
               </Route>
               </Route>
+              
+                  {/* --- (2) NOVO GRUPO DE ROTAS DE ADMIN --- */}
+                  {/* Estas rotas SÓ funcionam se o usuário estiver logado
+                      E o <AdminRoute> verificar que ele é 'ADMIN' */}
+                    <Route element={<AdminRoute />}>
+                    <Route path="/admin/upload" element={<AdminUploadScreen />} />
+                    {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
+                  </Route>
             </Routes>
           </AuthProvider>
         </Router>

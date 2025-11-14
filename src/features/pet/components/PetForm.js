@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import PetService from "../services/PetService"; // 🐾
@@ -8,6 +8,7 @@ import { useAuth } from "../../../shared/context/AuthContext";
 const PetForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const fileInputRef = useRef(null);
 
   // Lógica de permissão (igual)
   useEffect(() => {
@@ -27,15 +28,20 @@ const PetForm = () => {
     raca: "", // Novo Campo (Opcional)
     cor: "",  // Novo Campo (Opcional)
     descricao: "", // Será enviado como 'observacoesAnimal'
-    imagemUrl: ""
   });
   const [errors, setErrors] = useState({});
+  const [imagemArquivo, setImagemArquivo] = useState(null); // <-- ✨ ADICIONE ESTA LINHA AQUI
 
   // Handler único (igual)
   const handleForm = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+    const handleFileChange = (e) => {
+    setImagemArquivo(e.target.files[0]);
+    setErrors((prev) => ({ ...prev, imagem: "" })); // Limpa erro da imagem
   };
 
   const handleBack = () => navigate(-1);
@@ -65,36 +71,33 @@ const PetForm = () => {
     }
 
     try {
-      const payload = {
-        nome: form.nome,
-        idade: parseInt(form.idade, 10),
-        
-        // Valores exatos exigidos pelo Java (Case Sensitive)
-        porte: form.porte,   // "Pequeno", "Médio", "Grande"
-        especie: form.especie, // "Cachorro", "Gato"
-        sexo: form.sexo,     // "M", "F"
-        
-        // Campos opcionais (Envia string vazia ou padrão se não preenchido)
-        raca: form.raca || "Não definida",
-        cor: form.cor || "Não informada",
-        
-        // Mapeamento de nome: Front(descricao) -> Back(observacoesAnimal)
-        observacoesAnimal: form.descricao,
+// 1. Cria o 'payload' DTO (sem as fotos)
+      const payloadDto = {
+        nome: form.nome,
+        idade: parseInt(form.idade, 10),
+        porte: form.porte,
+        especie: form.especie,
+        sexo: form.sexo,
+        raca: form.raca || "Não definida",
+        cor: form.cor || "Não informada",
+        observacoesAnimal: form.descricao,
+        ong: { id: user.id },
+  	    fichaMedicaAnimal: null
+      };
 
-        // Objeto ONG (Estrutura aninhada)
-        ong: {
-          id: user.id
-        },
+      // 2. Cria o FormData
+      const formData = new FormData();
+      formData.append("dto", new Blob([JSON.stringify(payloadDto)], {
+        type: "application/json"
+      }));
 
-        // Campos complexos que o Back pede (enviando vazio/null para não quebrar)
-        fichaMedicaAnimal: null,
-        fotosAnimais: [] 
-        // OBS: Se quiser mandar a foto, precisaria saber a estrutura do FotoAnimalDTO.
-        // Por enquanto, mandamos [] para garantir que o cadastro funcione.
-      };
+      // 3. Adiciona o ARQUIVO (que está no state 'imagemArquivo')
+      if (imagemArquivo) {
+        formData.append("file", imagemArquivo);
+      }
 
-      console.log("Enviando payload para criar pet:", payload);
-      await PetService.criarPet(payload); // 🐾
+      console.log("Enviando FormData para criar pet...");
+      await PetService.criarPet(formData); // 🐾 (Envia o FormData)
       
       // ****** ⬇️ CORREÇÃO APLICADA AQUI ⬇️ ******
       navigate("/adotar"); // 🐾 Volta para a lista de pets (era /pets)
@@ -131,7 +134,7 @@ const PetForm = () => {
     </div>
   );
   
-  const renderSelect = (id, label, options) => (
+  const renderSelect = (id, label, options, values) => (
     <div className="mb-3.5">
       <label htmlFor={id} className="block text-black font-medium text-sm">
         {label}:
@@ -146,7 +149,14 @@ const PetForm = () => {
         } bg-white/95 text-black`}
       >
         <option value="" disabled>Selecione...</option>
-        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        {/* --- ESTA É A MUDANÇA --- */}
+        {/* Agora, ele usa o array 'values' se ele for fornecido */}
+        {options.map((opt, index) => (
+          <option key={opt} value={values ? values[index] : opt}>
+            {opt}
+          </option>
+        ))}
+        {/* --- FIM DA MUDANÇA --- */}
       </select>
       {errors[id] && <p className="text-red-600 text-xs mt-1">{errors[id]}</p>}
     </div>
@@ -213,7 +223,42 @@ const PetForm = () => {
           {renderInput("cor", "Cor (Opcional)")}
 
           {/* Imagem (Apenas visual por enquanto, não será salva no back sem DTO correto) */}
-          {renderInput("imagemUrl", "URL da Foto (Opcional)")}
+{/* --- CAMPO DE UPLOAD DE ARQUIVO ESTILIZADO --- */}
+          <div className="mb-3.5">
+            <label htmlFor="imagem-input-falso" className="block text-black font-medium text-sm">
+              Foto do Pet (Opcional):
+            </label>
+
+            {/* 1. O Input FALSO (que o usuário vê) */}
+            <div
+              id="imagem-input-falso"
+              // Copia EXATAMENTE as classes do seu renderInput
+              className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${
+                errors.imagem ? "border-red-500" : "border-white/80"
+              } bg-white/95 text-black cursor-pointer`} 
+              onClick={() => fileInputRef.current.click()} // Ativa o input real
+            >
+              {/* Mostra o nome do arquivo ou um placeholder */}
+              {imagemArquivo ? (
+                <span className="text-black">{imagemArquivo.name}</span>
+              ) : (
+                <span className="text-gray-500">Clique para selecionar um arquivo</span>
+              )}
+            </div>
+
+            {/* 2. O Input REAL (que fica escondido) */}
+            <input
+              id="imagem-real"
+              name="imagem"
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={handleFileChange}
+              ref={fileInputRef} // Conecta o 'ref'
+              className="hidden" // ESCONDE o input feio
+            />
+            {errors.imagem && <p className="text-red-600 text-xs mt-1">{errors.imagem}</p>}
+          </div>
+          {/* --- FIM DA MUDANÇA --- */}
           
           {renderTextarea("descricao", "Descrição / Observações")}
 

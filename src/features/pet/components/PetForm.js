@@ -50,7 +50,7 @@ const PetForm = () => {
     if (!form.nome) tempErrors.nome = "O nome é obrigatório!";
     if (!form.especie) tempErrors.especie = "A espécie é obrigatória!";
     if (!form.porte) tempErrors.porte = "O porte é obrigatório!";
-        if (!form.sexo) tempErrors.sexo = "O sexo é obrigatório!"; // Validação nova
+    if (!form.sexo) tempErrors.sexo = "O sexo é obrigatório!"; // Validação nova
     if (!form.idade) tempErrors.idade = "A idade é obrigatória!";
     if (form.idade && form.idade < 0) tempErrors.idade = "Idade inválida.";
 
@@ -197,10 +197,15 @@ const PetForm = () => {
           </h2>
         </div>
 
-        <form onSubmit={enviaServidor} className="w-full">
+       <form onSubmit={enviaServidor} className="w-full">
           {renderInput("nome", "Nome do Pet")}
+          
+          {/* O Backend exige Cachorro/Gato com maiúscula */}
           {renderSelect("especie", "Espécie", ["Cachorro", "Gato"])}
+          
+          {/* O Backend exige Pequeno/Médio/Grande com acento */}
           {renderSelect("porte", "Porte", ["Pequeno", "Médio", "Grande"])}
+
           {renderSelect("sexo", "Sexo", ["Macho", "Fêmea"], ["M", "F"])}
           {renderInput("idade", "Idade (em anos)", "number")}
           {/* Campos opcionais novos */}

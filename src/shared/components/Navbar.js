@@ -192,7 +192,6 @@ const Navbar = () => {
                   <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
                     <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
                   </span>
-
                   {/* --- ✨✨ BOTÃO DE PERFIL ADICIONADO (MOBILE) ✨✨ --- */}
                   <button
                     onClick={() => handleNavigate("/editar-perfil")}

@@ -26,6 +26,7 @@ import AdminUploadScreen from './features/splash/components/AdminUploadScreen';
 import PetsPage from './features/pet/PetsPage';
 import PetForm from './features/pet/components/PetForm';
 import PetPage from './features/pet/[id]/PetPage';
+import EditarPerfilPage from './features/home/EditarPerfilPage.js';
 // ou: import EventoForm from './features/eventos/components/EventoForm';
 
 import './index.css';
@@ -76,6 +77,7 @@ function App() {
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<OngHome />} />
                   <Route path="/adotante-home" element={<AdotanteHome />} />
+                  <Route path="/editar-perfil" element={<EditarPerfilPage />} />
 
                   {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
 

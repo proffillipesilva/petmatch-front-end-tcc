@@ -50,11 +50,10 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
   return (
     <Link to={`/adotar/${pet.id}`} className="block bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
       
-      {/* --- MUDANÇA: Adiciona a tag <img> --- */}
       <img 
         src={imageUrl} 
         alt={pet.nome} 
-        className="w-full h-56 object-cover" // <-- Estilo de exemplo
+        className="w-full h-56 object-contain" // <-- ✨ MUDANÇA AQUI
       />
       
       <div className="p-4 relative">

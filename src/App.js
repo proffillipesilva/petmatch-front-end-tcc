@@ -75,14 +75,14 @@ function App() {
               {/* GRUPO 3: ROTAS PRIVADAS (Apenas para logados) */}
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
-                  <Route path="/ong-home" element={<OngHome />} />
-                  <Route path="/adotante-home" element={<AdotanteHome />} />
+                  <Route path="/ong-home" element={<SplashScreen><OngHome /></SplashScreen>} />
+                  <Route path="/adotante-home" element={<SplashScreen><AdotanteHome /></SplashScreen>} />
                   <Route path="/editar-perfil" element={<EditarPerfilPage />} />
 
                   {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
 
                   {/* 1. A Lista (Substitui EventoList por EventosPage) */}
-                  <Route path="/eventos" element={<EventosPage />} />
+                  <Route path="/eventos" element={<SplashScreen><EventosPage /></SplashScreen>} />
 
                   {/* 2. O Formulário (Já estava correto) */}
                   <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
@@ -94,7 +94,7 @@ function App() {
 
                   {/* === 🐾 NOVA ROTA DE LISTA DE PETS 🐾 === */}
                   {/* Adicionada aqui para usar o MainLayout (Header/Footer) */}
-                  <Route path="/adotar" element={<PetsPage />} />
+                  <Route path="/adotar" element={<SplashScreen><PetsPage /></SplashScreen>} />
 
                   <Route path="/adotar/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
 

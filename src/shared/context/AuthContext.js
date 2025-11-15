@@ -37,12 +37,15 @@ export const AuthProvider = ({ children }) => {
     // ✨✨ CORREÇÃO AQUI ✨✨
     // Agora verificamos se 'userData.tipo' é 'ONG' (maiúsculo),
     // que é o que o seu backend está enviando.
-    if (userData.tipo === "ONG") {
-      navigate("/ong-home");
-    } else {
-      navigate("/adotante-home");
-    }
-  };
+    if (userData.tipo === "ADMIN") {
+            navigate("/admin/upload"); // Rota do seu painel de admin
+        } else if (userData.tipo === "ONG") {
+            navigate("/ong-home");
+        } else {
+            // Assume que o padrão é Adotante
+            navigate("/adotante-home");
+        }
+      };
 
   const logout = () => {
     setUser(null);

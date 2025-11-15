@@ -26,7 +26,7 @@ import AdminUploadScreen from './features/splash/components/AdminUploadScreen';
 import PetsPage from './features/pet/PetsPage';
 import PetForm from './features/pet/components/PetForm';
 import PetPage from './features/pet/[id]/PetPage';
-import EditarPerfilPage from './features/home/EditarPerfilPage.js';
+import EditarPerfilPage from './features/splash/components/EditarPerfilPage.js';
 // ou: import EventoForm from './features/eventos/components/EventoForm';
 
 import './index.css';

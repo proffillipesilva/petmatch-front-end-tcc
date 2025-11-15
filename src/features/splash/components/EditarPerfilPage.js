@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle, Save, User, Building } from 'lucide-react';
-import { useAuth } from '../../shared/context/AuthContext'; 
+import { useAuth } from '../../../shared/context/AuthContext'; 
 
 // ==================================================================
 // FORMULÁRIO DE EDIÇÃO - ADOTANTE (Com TODOS os campos)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaFileCsv, FaUpload, FaSpinner, FaPaw, FaTerminal, FaSkull, FaBiohazard } from 'react-icons/fa';
+import api from '../../../shared/utils/publicApi';
 // Removido: import publicApi from "../../../shared/utils/publicApi";
 // Removido: import useAuth from "...";
 // (Vamos focar apenas no front-end por enquanto)
@@ -101,20 +102,28 @@ const AdminUploadScreen = () => {
     const formData = new FormData();
     formData.append('arquivoCsv', selectedFile);
 
-    try {
-      // Aqui você usaria sua 'publicApi' real
-      // const response = await publicApi.post("/v1/api/seu-endpoint-csv", formData);
-      const response = await mockApiUpload(formData); // Usando nosso mock
+try {
+      // [REMOVA ESTA LINHA]
+      // const response = await mockApiUpload(formData); // Usando nosso mock
+
+      // [ADICIONE ESTA LINHA]
+      // Precisamos do seu 'publicApi' que envia o Token de Admin
+      const response = await api.post("/v1/api/admin/upload-csv", formData);
 
       addLog("...Upload concluído.");
-      addLog(`Resposta do servidor: ${response.message}`);
+      // Se você usa axios, a resposta de texto vem em 'response.data'
+      addLog(`Resposta do servidor: ${response.data}`);
       addLog("SISTEMA: Dados assimilados.");
       setStatus('SUCCESS');
 
     } catch (error) {
       console.error("Erro no upload:", error);
       addLog(`### FALHA CRÍTICA ###`);
-      addLog(error.message || "Conexão perdida com o mainframe.");
+      
+      // Tenta pegar a mensagem de erro do backend
+      const errorMessage = error.response?.data || error.message || "Conexão perdida com o mainframe.";
+      addLog(errorMessage);
+      
       setStatus('ERROR');
     }
   };
